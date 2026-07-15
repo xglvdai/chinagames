@@ -1,0 +1,4 @@
+# Cloudflare Pages Redirects
+/games           /#games    302
+/leaderboard     /#leaderboard   302
+/about           /#about    302

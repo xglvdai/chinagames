@@ -1,0 +1,16 @@
+{
+  "name": "dragontile-api",
+  "version": "1.0.0",
+  "description": "DragonTile Games — Cloudflare Worker API for leaderboards and game data",
+  "private": true,
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev src/index.js",
+    "deploy": "wrangler deploy",
+    "db:init": "wrangler d1 execute dragontile-db --file=schema.sql",
+    "db:local": "wrangler d1 execute dragontile-db --file=schema.sql --local"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}

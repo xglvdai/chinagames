@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Pitch-Pot — Touhu | DragonTile Games</title>
+  <meta name="description" content="Play Pitch-pot (Touhu), the ancient Chinese archery game. Click to aim, hold to charge, release to throw!">
+  <link rel="canonical" href="https://dragontile.games/games/touhu/">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .game-page { padding-top: var(--nav-height); min-height: 100vh; background: var(--color-bg); }
+    .game-header-bar { background: var(--color-bg-alt); border-bottom: 1px solid var(--color-border); padding: var(--space-md) 0; }
+    .game-header-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-md); }
+    .game-title-area h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .game-breadcrumb { font-size: 0.8rem; color: var(--color-text-muted); }
+    .game-breadcrumb a { color: var(--color-gold); }
+    .game-stats-bar { display: flex; gap: var(--space-lg); }
+    .game-stat-item { text-align: center; }
+    .game-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--color-gold-light); font-family: var(--font-display); }
+    .game-stat-label { font-size: 0.7rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .game-actions { display: flex; gap: var(--space-sm); }
+    .game-board-wrap { padding: var(--space-md) 0; display: flex; flex-direction: column; align-items: center; gap: var(--space-lg); }
+    #gameCanvas { border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-lg); cursor: crosshair; max-width: 100%; touch-action: none; }
+    .power-bar-wrap { width: 320px; max-width: 100%; }
+    .power-bar-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--color-text-dim); margin-bottom: 2px; }
+    .power-bar { height: 10px; background: var(--color-bg-card); border-radius: var(--radius-full); overflow: hidden; border: 1px solid var(--color-border); }
+    .power-fill { height: 100%; background: linear-gradient(90deg, var(--color-jade), var(--color-gold), var(--color-primary)); border-radius: var(--radius-full); transition: width 0.05s; width: 0%; }
+    .throw-result { text-align: center; font-size: 1.1rem; font-weight: 700; min-height: 2rem; }
+    .throw-result.hit { color: var(--color-gold); } .throw-result.miss { color: var(--color-text-muted); } .throw-result.near { color: var(--color-jade); }
+    .instructions-text { color: var(--color-text-dim); font-size: 0.83rem; text-align: center; max-width: 500px; line-height: 1.7; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal { background: var(--color-bg-card); border: 1px solid var(--color-gold-dark); border-radius: var(--radius-xl); padding: var(--space-2xl); text-align: center; max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.6); animation: modalIn 0.4s ease; }
+    @keyframes modalIn { from{transform:scale(0.9) translateY(20px);opacity:0;} to{transform:scale(1) translateY(0);opacity:1;} }
+    .modal-icon { font-size: 4rem; margin-bottom: var(--space-md); }
+    .modal h2 { margin-bottom: var(--space-sm); }
+  </style>
+</head>
+<body>
+<nav class="nav" id="nav">
+  <div class="container nav-inner">
+    <a href="/" class="nav-logo"><span class="logo-icon">龍</span><span class="logo-text">DragonTile</span></a>
+    <ul class="nav-links">
+      <li><a href="/" class="nav-link">Home</a></li>
+      <li class="nav-dropdown">
+        <span class="nav-link" style="cursor:pointer;">Games ▾</span>
+        <ul class="dropdown-menu">
+          <li><a href="/games/mahjong/">🀄 Mahjong</a></li>
+          <li><a href="/games/hanzi/">林 Hanzi Match</a></li>
+          <li><a href="/games/klotski/">🧩 Klotski</a></li>
+          <li><a href="/games/touhu/">🏺 Pitch-Pot</a></li>
+          <li><a href="/games/abacus/">🧮 Abacus</a></li>
+        </ul>
+      </li>
+      <li><a href="/how-to-play/#guide-touhu" class="nav-link">How to Play</a></li>
+      <li><a href="/#leaderboard" class="nav-link">Leaderboard</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="game-page">
+  <div class="game-header-bar">
+    <div class="container game-header-inner">
+      <div class="game-title-area">
+        <div class="game-breadcrumb"><a href="/">Home</a> / Games / <strong>Pitch-Pot</strong></div>
+        <h1>🏺 Pitch-Pot — Touhu</h1>
+      </div>
+      <div class="game-stats-bar">
+        <div class="game-stat-item"><div class="game-stat-value" id="scoreDisplay">0</div><div class="game-stat-label">Score</div></div>
+        <div class="game-stat-item"><div class="game-stat-value" id="throwsDisplay">0/10</div><div class="game-stat-label">Round</div></div>
+        <div class="game-stat-item"><div class="game-stat-value" id="bestDisplay">0</div><div class="game-stat-label">Best</div></div>
+      </div>
+      <div class="game-actions">
+        <button class="btn btn-primary btn-sm" id="restartBtn">🔄 New Game</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container game-board-wrap">
+    <canvas id="gameCanvas" width="700" height="420"></canvas>
+
+    <div class="power-bar-wrap">
+      <div class="power-bar-label"><span>Power</span><span id="powerPct">0%</span></div>
+      <div class="power-bar"><div class="power-fill" id="powerFill"></div></div>
+    </div>
+
+    <div class="throw-result" id="throwResult"></div>
+    <div id="angleIndicator" style="font-size:0.85rem;color:var(--color-gold-light);min-height:1.2rem;"></div>
+
+    <p class="instructions-text">
+      🎯 <strong>1.</strong> Move mouse/touch to <strong>aim</strong> (angle line shows direction). <strong>2.</strong> Click & hold to <strong>charge</strong> power (watch the bar fill). <strong>3.</strong> Release to <strong>throw!</strong> Wind varies each round!
+    </p>
+  </div>
+</div>
+
+<div class="modal-overlay" id="gameOverModal">
+  <div class="modal">
+    <div class="modal-icon" id="resultIcon">🏆</div>
+    <h2 id="resultTitle">Game Over!</h2>
+    <p style="color:var(--color-text-dim);">Final Score: <strong id="finalScoreVal">0</strong></p>
+    <p style="color:var(--color-gold-light); font-size:1.5rem;" id="resultRating"></p>
+    <div style="display:flex;gap:var(--space-sm);justify-content:center;margin-top:var(--space-lg);">
+      <button class="btn btn-primary" id="playAgainBtn">🔄 Play Again</button>
+      <a href="/" class="btn btn-secondary">🏠 Home</a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const canvas = document.querySelector('#gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  // Game constants
+  const SHOOTER_X = 100, SHOOTER_Y = 340;
+  const POT_X = 520, POT_Y = 310;
+  const POT_R = 32, POT_MOUTH_R = 14, POT_H = 70;
+  const GROUND_Y = 370;
+  const MAX_THROWS = 10;
+  const GRAVITY = 0.45;
+  const MAX_POWER = 100;
+
+  let score = 0, throwsUsed = 0;
+  let bestScore = parseInt(localStorage.getItem('touhu_best') || '0');
+  let isCharging = false, chargePower = 0, chargeInterval = null;
+  let mouseX = SHOOTER_X + 50, mouseY = SHOOTER_Y - 100;
+  let arrowFlying = false;
+  let arrow = { x:0, y:0, vx:0, vy:0 };
+  let windForce = 0;
+
+  function randomWind() { return (Math.random() - 0.5) * 4; }
+
+  function updateUI() {
+    document.querySelector('#scoreDisplay').textContent = score;
+    document.querySelector('#throwsDisplay').textContent = `${throwsUsed}/${MAX_THROWS}`;
+    document.querySelector('#bestDisplay').textContent = bestScore;
+    document.querySelector('#powerPct').textContent = '0%';
+    document.querySelector('#powerFill').style.width = '0%';
+    document.querySelector('#angleIndicator').textContent = '';
+    document.querySelector('#throwResult').textContent = '';
+    document.querySelector('#throwResult').className = 'throw-result';
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Background
+    const bg = ctx.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0,'#1a1a2e'); bg.addColorStop(0.4,'#16213e'); bg.addColorStop(0.7,'#0f0f1a'); bg.addColorStop(1,'#0a0a0a');
+    ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+    // Floor
+    ctx.fillStyle = '#2d1f0e'; ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
+    ctx.strokeStyle = '#4a3520'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, GROUND_Y); ctx.lineTo(W, GROUND_Y); ctx.stroke();
+
+    // Target distance marker
+    const dist = POT_X - SHOOTER_X;
+    ctx.fillStyle = '#3a2818';
+    for (let x = SHOOTER_X + 80; x < POT_X - 80; x += 60) {
+      ctx.beginPath(); ctx.moveTo(x, GROUND_Y); ctx.lineTo(x + 5, GROUND_Y + 9); ctx.lineTo(x + 10, GROUND_Y); ctx.fill();
+    }
+    ctx.fillStyle = '#5a3a20'; ctx.font = '9px Inter'; ctx.textAlign = 'center';
+    ctx.fillText(Math.round(dist) + 'px', (SHOOTER_X + POT_X)/2, GROUND_Y + 20);
+
+    // Pot stand
+    ctx.fillStyle = '#5c3a1e'; ctx.fillRect(POT_X - 20, POT_Y + 8, 40, 10);
+    ctx.fillStyle = '#3a2010'; ctx.fillRect(POT_X - 26, POT_Y, 52, 6);
+
+    // Pot body
+    const pg = ctx.createLinearGradient(POT_X - POT_R, 0, POT_X + POT_R, 0);
+    pg.addColorStop(0,'#6b5010'); pg.addColorStop(0.3,'#b8942e'); pg.addColorStop(0.5,'#e0c060');
+    pg.addColorStop(0.7,'#b8942e'); pg.addColorStop(1,'#6b5010');
+    ctx.fillStyle = pg;
+    const py = POT_Y - POT_H;
+    ctx.beginPath();
+    // Rounded pot shape
+    ctx.moveTo(POT_X - POT_R + 10, py);
+    ctx.lineTo(POT_X + POT_R - 10, py);
+    ctx.quadraticCurveTo(POT_X + POT_R, py, POT_X + POT_R, py + 10);
+    ctx.lineTo(POT_X + POT_R, py + POT_H);
+    ctx.quadraticCurveTo(POT_X + POT_R, py + POT_H + 5, POT_X + POT_R - 4, py + POT_H + 5);
+    ctx.lineTo(POT_X - POT_R + 4, py + POT_H + 5);
+    ctx.quadraticCurveTo(POT_X - POT_R, py + POT_H + 5, POT_X - POT_R, py + POT_H);
+    ctx.lineTo(POT_X - POT_R, py + 10);
+    ctx.quadraticCurveTo(POT_X - POT_R, py, POT_X - POT_R + 10, py);
+    ctx.fill();
+
+    // Pot rim
+    ctx.fillStyle = '#d4af37'; ctx.fillRect(POT_X - POT_R - 4, py - 5, POT_R*2 + 8, 10);
+    ctx.fillStyle = '#e8c96a'; ctx.fillRect(POT_X - POT_R - 2, py - 3, POT_R*2 + 4, 6);
+
+    // Pot mouth hole
+    ctx.fillStyle = '#050505';
+    ctx.beginPath(); ctx.ellipse(POT_X, py, POT_MOUTH_R, 7, 0, 0, Math.PI*2);
+    ctx.fill(); ctx.strokeStyle = '#4a3010'; ctx.lineWidth = 1.5; ctx.stroke();
+
+    // Score zone rings on pot body
+    ctx.strokeStyle = 'rgba(212,175,55,0.4)'; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.ellipse(POT_X, POT_Y - 30, POT_R - 8, 10, 0, 0, Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(POT_X, POT_Y - 15, POT_R - 12, 12, 0, 0, Math.PI*2); ctx.stroke();
+
+    // Shooter area
+    ctx.fillStyle = '#1a1a2e'; ctx.beginPath(); ctx.arc(SHOOTER_X, SHOOTER_Y, 22, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#c9a84c'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#e8c96a'; ctx.font = '22px serif'; ctx.textAlign = 'center';
+    ctx.fillText('🏹', SHOOTER_X, SHOOTER_Y + 7);
+
+    // Wind indicator
+    if (Math.abs(windForce) > 0.3) {
+      ctx.fillStyle = 'rgba(255,255,255,0.15)';
+      ctx.font = '700 14px Inter'; ctx.textAlign = 'center';
+      const wStr = windForce > 0 ? '→ Wind →' : '← Wind ←';
+      const wLen = Math.abs(windForce);
+      const wScale = wLen < 1 ? '' : wLen < 2 ? ' 💨' : ' 🌪️';
+      ctx.fillText(wStr + wScale, W/2, 24);
+    }
+
+    // Aiming line (when not flying and not charging)
+    if (!arrowFlying && !isCharging) {
+      const dx = mouseX - SHOOTER_X;
+      const dy = mouseY - SHOOTER_Y;
+      const len = Math.sqrt(dx*dx + dy*dy);
+      if (len > 10) {
+        ctx.strokeStyle = 'rgba(201,168,76,0.5)'; ctx.lineWidth = 1.5; ctx.setLineDash([8, 4]);
+        ctx.beginPath(); ctx.moveTo(SHOOTER_X + 15, SHOOTER_Y);
+        ctx.lineTo(SHOOTER_X + 15 + dx/len * 100, SHOOTER_Y + dy/len * 100);
+        ctx.stroke(); ctx.setLineDash([]);
+
+        // Trajectory preview dots
+        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        for (let t = 0.1; t < 2.0; t += 0.15) {
+          const vx0 = (dx/len) * 8, vy0 = (dy/len) * 8;
+          const px = SHOOTER_X + 15 + vx0 * 11 * t + windForce * t * t * 4;
+          const py2 = SHOOTER_Y + vy0 * 11 * t + GRAVITY * t * t * 30;
+          if (px < W && py2 < GROUND_Y + 10) {
+            ctx.beginPath(); ctx.arc(px, py2, 1.5, 0, Math.PI*2); ctx.fill();
+          }
+        }
+      }
+    }
+
+    // Charging indicator
+    if (isCharging) {
+      // Pulsing ring
+      const pulse = 1 + chargePower / MAX_POWER * 0.3;
+      ctx.strokeStyle = `rgba(230,57,70,${0.3 + chargePower/MAX_POWER*0.4})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(SHOOTER_X, SHOOTER_Y, 25 * pulse, 0, Math.PI*2); ctx.stroke();
+
+      // Aim line during charge
+      const dx = mouseX - SHOOTER_X, dy = mouseY - SHOOTER_Y;
+      const len = Math.sqrt(dx*dx + dy*dy);
+      ctx.strokeStyle = 'rgba(230,57,70,0.8)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(SHOOTER_X, SHOOTER_Y);
+      ctx.lineTo(SHOOTER_X + dx/len*80, SHOOTER_Y + dy/len*80);
+      ctx.stroke();
+    }
+
+    // Flying arrow
+    if (arrowFlying) {
+      ctx.save(); ctx.translate(arrow.x, arrow.y);
+      const angle = Math.atan2(arrow.vy, arrow.vx);
+      ctx.rotate(angle);
+      ctx.fillStyle = '#8B4513'; ctx.fillRect(0, -2.5, 22, 5);
+      ctx.fillStyle = '#d4af37';
+      ctx.beginPath(); ctx.moveTo(22, -2.5); ctx.lineTo(30, 0); ctx.lineTo(22, 2.5); ctx.fill();
+      ctx.fillStyle = '#e63946';
+      ctx.beginPath(); ctx.moveTo(0, -2.5); ctx.lineTo(-4, 0); ctx.lineTo(0, 2.5); ctx.fill();
+      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(0, 0, 3, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  function throwArrow() {
+    if (arrowFlying || throwsUsed >= MAX_THROWS) return;
+    const dx = mouseX - SHOOTER_X, dy = mouseY - SHOOTER_Y;
+    const len = Math.max(1, Math.sqrt(dx*dx + dy*dy));
+    const power = chargePower / MAX_POWER; // 0 to 1
+    if (power < 0.05) return;
+
+    const speed = 6 + power * 10; // min 6, max 16
+    arrow.x = SHOOTER_X + 20;
+    arrow.y = SHOOTER_Y;
+    arrow.vx = (dx/len) * speed + windForce * 0.6;
+    arrow.vy = (dy/len) * speed;
+    arrowFlying = true;
+    throwsUsed++;
+    document.querySelector('#throwsDisplay').textContent = `${throwsUsed}/${MAX_THROWS}`;
+
+    animateArrow();
+  }
+
+  function animateArrow() {
+    if (!arrowFlying) return;
+    arrow.vy += GRAVITY;
+    arrow.x += arrow.vx;
+    arrow.y += arrow.vy;
+    arrow.vx += windForce * 0.04;
+
+    draw();
+
+    // Ground hit
+    if (arrow.y >= GROUND_Y) {
+      arrow.y = GROUND_Y;
+      arrowFlying = false;
+      checkHit();
+      draw();
+      if (throwsUsed >= MAX_THROWS) setTimeout(endGame, 800);
+      return;
+    }
+    // Out of bounds
+    if (arrow.x > W + 50 || arrow.x < -50 || arrow.y < -100) {
+      arrowFlying = false;
+      document.querySelector('#throwResult').textContent = '💨 Out of bounds!';
+      document.querySelector('#throwResult').className = 'throw-result miss';
+      draw();
+      if (throwsUsed >= MAX_THROWS) setTimeout(endGame, 800);
+      return;
+    }
+
+    requestAnimationFrame(animateArrow);
+  }
+
+  function checkHit() {
+    const dx = arrow.x - POT_X;
+    const potMouthY = POT_Y - POT_H;
+    const dy = arrow.y - potMouthY;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+
+    let points = 0, msg = '';
+
+    // Perfect: arrow is near the mouth opening
+    if (Math.abs(dx) < POT_MOUTH_R + 4 && arrow.y < potMouthY + 12 && arrow.y > potMouthY - 6) {
+      points = 50; msg = '🎯 PERFECT! Center hit! +50';
+      document.querySelector('#throwResult').className = 'throw-result hit';
+    } else if (dist < POT_MOUTH_R + 8) {
+      points = 30; msg = '✨ Great! Near center! +30';
+      document.querySelector('#throwResult').className = 'throw-result hit';
+    } else if (dist < POT_R) {
+      points = 15; msg = '👌 Hit the pot! +15';
+      document.querySelector('#throwResult').className = 'throw-result near';
+    } else if (dist < POT_R + 30) {
+      points = 5; msg = '👍 Close! +5';
+      document.querySelector('#throwResult').className = 'throw-result near';
+    } else {
+      msg = '😔 Miss!';
+      document.querySelector('#throwResult').className = 'throw-result miss';
+    }
+
+    score += points;
+    document.querySelector('#scoreDisplay').textContent = score;
+    document.querySelector('#throwResult').textContent = msg;
+  }
+
+  function endGame() {
+    if (score > bestScore) { bestScore = score; localStorage.setItem('touhu_best', bestScore); document.querySelector('#bestDisplay').textContent = bestScore; }
+    document.querySelector('#finalScoreVal').textContent = score;
+    const icon = document.querySelector('#resultIcon'), title = document.querySelector('#resultTitle'), rating = document.querySelector('#resultRating');
+    if (score >= 300) { icon.textContent='👑'; title.textContent='Legendary Archer!'; rating.textContent='⭐⭐⭐ Master of Touhu'; }
+    else if (score >= 200) { icon.textContent='🏆'; title.textContent='Expert Thrower!'; rating.textContent='⭐⭐ Great aim!'; }
+    else if (score >= 100) { icon.textContent='🎯'; title.textContent='Good Game!'; rating.textContent='⭐ Keep practicing!'; }
+    else { icon.textContent='🏺'; title.textContent='Good Effort!'; rating.textContent='Practice makes perfect'; }
+    document.querySelector('#gameOverModal').classList.add('active');
+  }
+
+  function restartGame() {
+    score = 0; throwsUsed = 0; windForce = randomWind();
+    arrowFlying = false; isCharging = false; chargePower = 0;
+    document.querySelector('#scoreDisplay').textContent = '0';
+    document.querySelector('#throwsDisplay').textContent = `0/${MAX_THROWS}`;
+    document.querySelector('#bestDisplay').textContent = bestScore;
+    document.querySelector('#gameOverModal').classList.remove('active');
+    updateUI(); draw();
+  }
+
+  // Mouse events
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = W / rect.width, scaleY = H / rect.height;
+    mouseX = (e.clientX - rect.left) * scaleX;
+    mouseY = (e.clientY - rect.top) * scaleY;
+    if (!arrowFlying && !isCharging) {
+      const angle = Math.atan2(mouseY - SHOOTER_Y, mouseX - SHOOTER_X) * 180 / Math.PI;
+      document.querySelector('#angleIndicator').textContent = `Aim: ${Math.round(angle)}° | Distance to pot: ${Math.round(POT_X - SHOOTER_X)}px`;
+      draw();
+    }
+  });
+
+  canvas.addEventListener('mousedown', (e) => {
+    if (arrowFlying || throwsUsed >= MAX_THROWS) return;
+    e.preventDefault();
+    isCharging = true; chargePower = 0;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = W / rect.width, scaleY = H / rect.height;
+    mouseX = (e.clientX - rect.left) * scaleX;
+    mouseY = (e.clientY - rect.top) * scaleY;
+    document.querySelector('#throwResult').textContent = '';
+    document.querySelector('#throwResult').className = 'throw-result';
+    chargeInterval = setInterval(() => {
+      chargePower = Math.min(MAX_POWER, chargePower + 2.5);
+      document.querySelector('#powerPct').textContent = Math.round(chargePower) + '%';
+      document.querySelector('#powerFill').style.width = chargePower + '%';
+    }, 20);
+    draw();
+  });
+
+  canvas.addEventListener('mouseup', () => {
+    if (!isCharging) return;
+    isCharging = false;
+    if (chargeInterval) { clearInterval(chargeInterval); chargeInterval = null; }
+    document.querySelector('#powerPct').textContent = '0%';
+    document.querySelector('#powerFill').style.width = '0%';
+    draw();
+    if (chargePower > 3) throwArrow();
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    if (isCharging) {
+      isCharging = false;
+      if (chargeInterval) { clearInterval(chargeInterval); chargeInterval = null; }
+      document.querySelector('#powerPct').textContent = '0%';
+      document.querySelector('#powerFill').style.width = '0%';
+      draw();
+      if (chargePower > 3) throwArrow();
+    }
+  });
+
+  // Touch events
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = W / rect.width, scaleY = H / rect.height;
+    const t = e.touches[0];
+    mouseX = (t.clientX - rect.left) * scaleX;
+    mouseY = (t.clientY - rect.top) * scaleY;
+    if (!arrowFlying && !isCharging) draw();
+  }, {passive: false});
+
+  canvas.addEventListener('touchstart', (e) => {
+    if (arrowFlying || throwsUsed >= MAX_THROWS) return;
+    e.preventDefault();
+    isCharging = true; chargePower = 0;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = W / rect.width, scaleY = H / rect.height;
+    const t = e.touches[0];
+    mouseX = (t.clientX - rect.left) * scaleX;
+    mouseY = (t.clientY - rect.top) * scaleY;
+    document.querySelector('#throwResult').textContent = '';
+    document.querySelector('#throwResult').className = 'throw-result';
+    chargeInterval = setInterval(() => {
+      chargePower = Math.min(MAX_POWER, chargePower + 2.5);
+      document.querySelector('#powerPct').textContent = Math.round(chargePower) + '%';
+      document.querySelector('#powerFill').style.width = chargePower + '%';
+    }, 20);
+    draw();
+  });
+
+  canvas.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    if (!isCharging) return;
+    isCharging = false;
+    if (chargeInterval) { clearInterval(chargeInterval); chargeInterval = null; }
+    document.querySelector('#powerPct').textContent = '0%';
+    document.querySelector('#powerFill').style.width = '0%';
+    draw();
+    if (chargePower > 3) throwArrow();
+  });
+
+  document.querySelector('#restartBtn').addEventListener('click', restartGame);
+  document.querySelector('#playAgainBtn').addEventListener('click', restartGame);
+
+  // Init
+  windForce = randomWind();
+  updateUI();
+  draw();
+})();
+</script>
+</body>
+</html>

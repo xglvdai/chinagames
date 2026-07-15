@@ -1,0 +1,26 @@
+node_modules/
+dist/
+build/
+.cache/
+.vercel/
+.output/
+
+# Cloudflare
+.wrangler/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local
+.env.production
+
+# Logs
+*.log
+npm-debug.log*

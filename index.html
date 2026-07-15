@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dragon Tile Games — Ancient Chinese Puzzles & Brain Teasers</title>
+  <meta name="description" content="Play free ancient Chinese puzzle games online: Mahjong Solitaire, Klotski, Hanzi Match, Pitch-pot, and Abacus puzzles. No download, no ads. Train your brain with Oriental wisdom!">
+  <meta name="keywords" content="mahjong solitaire, chinese puzzle games, brain teaser, klotski, hanzi, pitch-pot, abacus puzzle, free online games, dragon tile">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Dragon Tile Games — Ancient Chinese Puzzles">
+  <meta property="og:description" content="Play free ancient Chinese puzzle games: Mahjong, Klotski, Hanzi Match & more. Train your brain with Oriental wisdom!">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://dragontile.games">
+  <meta property="og:image" content="/assets/images/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://dragontile.games">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav" id="nav">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">
+        <span class="logo-icon">龍</span>
+        <span class="logo-text">DragonTile</span>
+      </a>
+      <ul class="nav-links">
+        <li class="nav-dropdown">
+          <span class="nav-link" style="cursor:pointer;">Games ▾</span>
+          <ul class="dropdown-menu">
+            <li><a href="/games/mahjong/">🀄 Mahjong Solitaire</a></li>
+            <li><a href="/games/hanzi/">林 Hanzi Match</a></li>
+            <li><a href="/games/klotski/">🧩 Klotski</a></li>
+            <li><a href="/games/touhu/">🏺 Pitch-Pot</a></li>
+            <li><a href="/games/abacus/">🧮 Abacus Enigma</a></li>
+          </ul>
+        </li>
+        <li><a href="#about" class="nav-link">About</a></li>
+        <li><a href="#leaderboard" class="nav-link">Leaderboard</a></li>
+        <li><a href="/how-to-play/" class="nav-link">How to Play</a></li>
+        <li><a href="#" class="nav-link btn-play-now" id="playNowBtn">Play Now</a></li>
+      </ul>
+      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero" id="home">
+    <div class="hero-bg-pattern"></div>
+    <div class="container hero-content">
+      <div class="hero-text">
+        <span class="hero-badge">🧧 New — Free to Play</span>
+        <h1 class="hero-title">
+          Ancient Chinese<br>
+          <span class="text-gradient">Puzzle Games</span><br>
+          Reimagined
+        </h1>
+        <p class="hero-subtitle">
+          Train your brain with 2,000 years of Oriental wisdom. Match tiles, solve puzzles, 
+          and master the art of Chinese logic games — all free, no download required.
+        </p>
+        <div class="hero-cta">
+          <a href="#games" class="btn btn-primary">
+            Explore Games
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="/games/mahjong/" class="btn btn-secondary">Play Mahjong →</a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat"><strong>5</strong><span>Unique Games</span></div>
+          <div class="stat"><strong>∞</strong><span>Free Forever</span></div>
+          <div class="stat"><strong>4.9★</strong><span>Player Rating</span></div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="floating-tiles" id="floatingTiles"></div>
+      </div>
+    </div>
+    <div class="scroll-indicator">
+      <span>Scroll to explore</span>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12l7 7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </div>
+  </section>
+
+  <!-- Games Section -->
+  <section class="games-section" id="games">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">🎮 Game Collection</span>
+        <h2>Choose Your Puzzle Adventure</h2>
+        <p>Each game is rooted in centuries of Chinese tradition, rebuilt for modern browsers</p>
+      </div>
+
+      <div class="games-grid">
+        <!-- Game 1: Mahjong Solitaire -->
+        <article class="game-card featured" id="game-mahjong">
+          <div class="game-card-visual">
+            <div class="game-icon">🀄</div>
+            <div class="game-difficulty">All Levels</div>
+            <span class="game-badge-popular">Most Popular</span>
+          </div>
+          <div class="game-card-body">
+            <h3>Mahjong Solitaire</h3>
+            <p class="game-desc">Match identical tiles in this timeless Chinese classic. Clear the board before time runs out to master the art of tile pairing.</p>
+            <div class="game-tags">
+              <span>Matching</span><span>Strategy</span><span>Relaxing</span>
+            </div>
+            <a href="/games/mahjong/" class="btn btn-card">Play Now →</a>
+          </div>
+        </article>
+
+        <!-- Game 2: Hanzi Match -->
+        <article class="game-card" id="game-hanzi">
+          <div class="game-card-visual">
+            <div class="game-icon">林</div>
+            <div class="game-difficulty">Easy - Hard</div>
+          </div>
+          <div class="game-card-body">
+            <h3>Hanzi Match</h3>
+            <p class="game-desc">Build Chinese characters from radicals. Drag & combine components to form meaningful symbols. Unlock the mystery of the written East!</p>
+            <div class="game-tags">
+              <span>Puzzle</span><span>Learning</span><span>Drag & Drop</span>
+            </div>
+            <a href="/games/hanzi/" class="btn btn-card">Play Now →</a>
+          </div>
+        </article>
+
+        <!-- Game 3: Klotski -->
+        <article class="game-card" id="game-klotski">
+          <div class="game-card-visual">
+            <div class="game-icon">🧩</div>
+            <div class="game-difficulty">Medium - Expert</div>
+          </div>
+          <div class="game-card-body">
+            <h3>Klotski — Hua Rong Dao</h3>
+            <p class="game-desc">Slide legendary Three Kingdoms heroes to free Cao Cao. Over 400 levels of this 2,000-year-old sliding block puzzle.</p>
+            <div class="game-tags">
+              <span>Logic</span><span>Sliding</span><span>Story Rich</span>
+            </div>
+            <a href="/games/klotski/" class="btn btn-card">Play Now →</a>
+          </div>
+        </article>
+
+        <!-- Game 4: Pitch-pot -->
+        <article class="game-card" id="game-touhu">
+          <div class="game-card-visual">
+            <div class="game-icon">🏺</div>
+            <div class="game-difficulty">Casual</div>
+          </div>
+          <div class="game-card-body">
+            <h3>Pitch-Pot — Touhu</h3>
+            <p class="game-desc">Aim, adjust power, and toss arrows into ancient bronze pots. Physics-based fun inspired by noble court games of old China.</p>
+            <div class="game-tags">
+              <span>Physics</span><span>Arcade</span><span>Aiming</span>
+            </div>
+            <a href="/games/touhu/" class="btn btn-card">Play Now →</a>
+          </div>
+        </article>
+
+        <!-- Game 5: Abacus Puzzle -->
+        <article class="game-card" id="game-abacus">
+          <div class="game-card-visual">
+            <div class="game-icon">🧮</div>
+            <div class="game-difficulty">Medium - Hard</div>
+          </div>
+          <div class="game-card-body">
+            <h3>Abacus Enigma</h3>
+            <p class="game-desc">Slide beads to solve arithmetic riddles. A unique puzzle mechanic blending ancient calculation tools with modern brain teasers.</p>
+            <div class="game-tags">
+              <span>Math</span><span>Unique</span><span>Brain Teaser</span>
+            </div>
+            <a href="/games/abacus/" class="btn btn-card">Play Now →</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Leaderboard Section -->
+  <section class="leaderboard-section" id="leaderboard">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">🏆 Top Players</span>
+        <h2>Dragon Hall of Fame</h2>
+        <p>Compete with players worldwide and claim your spot among legends</p>
+      </div>
+      <div class="leaderboard-tabs">
+        <button class="lb-tab active" data-game="mahjong">Mahjong</button>
+        <button class="lb-tab" data-game="klotski">Klotski</button>
+        <button class="lb-tab" data-game="hanzi">Hanzi Match</button>
+      </div>
+      <div class="leaderboard-table-wrap">
+        <table class="leaderboard-table" id="leaderboardTable">
+          <thead>
+            <tr><th>Rank</th><th>Player</th><th>Progress</th><th>Time</th><th>Date</th></tr>
+          </thead>
+          <tbody id="leaderboardBody">
+            <tr><td colspan="5" class="loading">Loading leaderboard...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="leaderboard-cta">
+        <p>Think you can beat them?</p>
+        <a href="/games/mahjong/" class="btn btn-primary">Play & Submit Score →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="about-section" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-text">
+          <span class="section-badge">📜 Our Story</span>
+          <h2>Where Ancient Wisdom Meets Modern Play</h2>
+          <p>DragonTile Games brings centuries-old Chinese puzzle traditions to your browser. From the strategic tile-matching of Mahjong to the logic of Klotski, our games preserve the soul of Eastern intellectual culture while delivering smooth, modern gameplay.</p>
+          <ul class="about-features">
+            <li>🎯 No downloads — 100% browser-based</li>
+            <li>📱 Mobile & desktop friendly</li>
+            <li>🌐 Global leaderboards</li>
+            <li>🎨 Authentic Chinese art & music</li>
+            <li>🆓 Completely free, no ads interruption</li>
+          </ul>
+        </div>
+        <div class="about-visual">
+          <div class="about-card">
+            <div class="about-card-icon">🎋</div>
+            <h3>2,000+ Years</h3>
+            <p>of puzzle tradition, now accessible to everyone</p>
+          </div>
+          <div class="about-card">
+            <div class="about-card-icon">🌍</div>
+            <h3>Global Community</h3>
+            <p>Players from 50+ countries enjoying Chinese puzzles</p>
+          </div>
+          <div class="about-card">
+            <div class="about-card-icon">⚡</div>
+            <h3>Edge Network</h3>
+            <p>Powered by Cloudflare for instant loading worldwide</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <span class="footer-logo">龍 DragonTile</span>
+          <p>Ancient Chinese puzzle games for the modern world. Train your mind, embrace the tradition.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Games</h4>
+          <a href="/games/mahjong/">Mahjong Solitaire</a>
+          <a href="/games/hanzi/">Hanzi Match</a>
+          <a href="/games/klotski/">Klotski</a>
+          <a href="/games/touhu/">Pitch-Pot</a>
+          <a href="/games/abacus/">Abacus Enigma</a>
+        </div>
+        <div class="footer-links">
+          <h4>Site</h4>
+          <a href="#about">About</a>
+          <a href="#leaderboard">Leaderboard</a>
+          <a href="/privacy">Privacy Policy</a>
+          <a href="/terms">Terms of Service</a>
+        </div>
+        <div class="footer-newsletter">
+          <h4>Stay Updated</h4>
+          <p>New games and features coming soon!</p>
+          <form class="newsletter-form" id="newsletterForm">
+            <input type="email" placeholder="your@email.com" required>
+            <button type="submit" class="btn btn-primary btn-sm">Subscribe</button>
+          </form>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 DragonTile Games. All rights reserved. Built with ❤️ on Cloudflare.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Game Picker Modal -->
+  <div class="modal-overlay" id="gamePickerModal">
+    <div class="modal game-picker-modal">
+      <button class="modal-close" id="closeGamePicker">&times;</button>
+      <h2>🎮 Choose Your Game</h2>
+      <p style="color:var(--color-text-dim);margin-bottom:var(--space-xl);">Pick an ancient Chinese puzzle to play:</p>
+      <div class="game-picker-grid">
+        <a href="/games/mahjong/" class="picker-card">
+          <span class="picker-icon">🀄</span>
+          <strong>Mahjong Solitaire</strong>
+          <small>10 Levels — Match & Clear</small>
+        </a>
+        <a href="/games/hanzi/" class="picker-card">
+          <span class="picker-icon">林</span>
+          <strong>Hanzi Match</strong>
+          <small>150 Characters — Build & Learn</small>
+        </a>
+        <a href="/games/klotski/" class="picker-card">
+          <span class="picker-icon">🧩</span>
+          <strong>Klotski</strong>
+          <small>3 Layouts — Slide & Escape</small>
+        </a>
+        <a href="/games/touhu/" class="picker-card">
+          <span class="picker-icon">🏺</span>
+          <strong>Pitch-Pot</strong>
+          <small>10 Rounds — Aim & Throw</small>
+        </a>
+        <a href="/games/abacus/" class="picker-card">
+          <span class="picker-icon">🧮</span>
+          <strong>Abacus Enigma</strong>
+          <small>15 Rounds — Slide & Solve</small>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>

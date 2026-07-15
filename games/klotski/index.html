@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Klotski — Hua Rong Dao | DragonTile Games</title>
+  <meta name="description" content="Play Klotski (Hua Rong Dao): the ancient Chinese sliding block puzzle. Free Cao Cao in 3 layouts!">
+  <link rel="canonical" href="https://dragontile.games/games/klotski/">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .game-page { padding-top: var(--nav-height); min-height: 100vh; background: var(--color-bg); }
+    .game-header-bar { background: var(--color-bg-alt); border-bottom: 1px solid var(--color-border); padding: var(--space-md) 0; }
+    .game-header-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-md); }
+    .game-title-area h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .game-breadcrumb { font-size: 0.8rem; color: var(--color-text-muted); }
+    .game-breadcrumb a { color: var(--color-gold); }
+    .game-stats-bar { display: flex; gap: var(--space-lg); }
+    .game-stat-item { text-align: center; }
+    .game-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--color-gold-light); font-family: var(--font-display); }
+    .game-stat-label { font-size: 0.7rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .game-actions { display: flex; gap: var(--space-sm); }
+    .game-board-wrap { padding: var(--space-xl) 0; display: flex; flex-direction: column; align-items: center; gap: var(--space-xl); }
+    .level-select { display: flex; gap: var(--space-sm); flex-wrap: wrap; justify-content: center; margin-bottom: var(--space-sm); }
+    .level-btn { padding: 0.4rem 1rem; border-radius: var(--radius-full); border: 1px solid var(--color-border); background: transparent; color: var(--color-text-dim); cursor: pointer; font-size: 0.8rem; transition: all var(--transition-fast); }
+    .level-btn:hover { border-color: var(--color-gold); color: var(--color-text); }
+    .level-btn.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+    .legend { display: flex; gap: var(--space-lg); flex-wrap: wrap; justify-content: center; font-size: 0.8rem; color: var(--color-text-dim); }
+    .legend span { display: flex; align-items: center; gap: 0.3rem; }
+    .legend-dot { width: 14px; height: 14px; border-radius: 3px; }
+    .legend-dot.red{background:#c1121f;} .legend-dot.green{background:#2a9d8f;}
+    .legend-dot.blue{background:#457b9d;} .legend-dot.purple{background:#6c5ce7;}
+
+    .klotski-wrapper { position: relative; }
+    .klotski-grid { display: grid; grid-template-columns: repeat(4, 90px); grid-template-rows: repeat(5, 90px); gap: 3px; background: #1a0a05; padding: 6px; border-radius: 8px; border: 4px solid #8B4513; box-shadow: var(--shadow-lg), inset 0 0 20px rgba(0,0,0,0.5); }
+    .grid-cell { background: #0d0503; border-radius: 4px; transition: background 0.15s; }
+    .grid-cell.highlight { background: rgba(201,168,76,0.25); box-shadow: inset 0 0 8px rgba(201,168,76,0.3); }
+
+    .block {
+      position: absolute;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-weight: 900; font-size: 1.8rem;
+      cursor: pointer; user-select: none; transition: left 0.12s, top 0.12s;
+      color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .block:hover { filter: brightness(1.1); }
+    .block.selected { box-shadow: 0 0 0 4px var(--color-gold), 0 0 20px rgba(201,168,76,0.5); z-index: 10; }
+    .block.caocao { background: linear-gradient(145deg, #c1121f, #780000); border: 2px solid #ff4d4d; }
+    .block.guanyu { background: linear-gradient(145deg, #2a9d8f, #1a6d5f); border: 2px solid #4ecdc4; }
+    .block.general { background: linear-gradient(145deg, #457b9d, #1d3557); border: 2px solid #6699cc; }
+    .block.soldier { background: linear-gradient(145deg, #6c5ce7, #4a3fb0); border: 2px solid #8b7cff; }
+
+    .dpad { display: grid; grid-template-areas: ". up ." "left . right" ". down ."; gap: 4px; }
+    .dpad-btn { width: 48px; height: 48px; border-radius: 8px; background: var(--color-bg-card); border: 1px solid var(--color-border); color: var(--color-text); font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .dpad-btn:hover { border-color: var(--color-gold); background: #222; }
+    .dpad-btn:active { background: var(--color-gold-dark); }
+    .dpad-btn.up{grid-area:up;} .dpad-btn.down{grid-area:down;}
+    .dpad-btn.left{grid-area:left;} .dpad-btn.right{grid-area:right;}
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal { background: var(--color-bg-card); border: 1px solid var(--color-gold-dark); border-radius: var(--radius-xl); padding: var(--space-2xl); text-align: center; max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.6); animation: modalIn 0.4s ease; }
+    @keyframes modalIn { from{transform:scale(0.9) translateY(20px);opacity:0;} to{transform:scale(1) translateY(0);opacity:1;} }
+    .modal-icon { font-size: 4rem; margin-bottom: var(--space-md); }
+    .modal h2 { margin-bottom: var(--space-sm); }
+
+    .exit-label {
+      position: absolute;
+      left: 25%;
+      bottom: 0;
+      width: 50%;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #c9a84c;
+      letter-spacing: 0.1em;
+      background: rgba(201,168,76,0.15);
+      border-top: 1px dashed #c9a84c;
+      pointer-events: none;
+      z-index: 20;
+    }
+    .exit-label::after { content: '▼ EXIT ▼'; }
+
+    @media (max-width: 500px) {
+      .klotski-grid { grid-template-columns: repeat(4, 62px); grid-template-rows: repeat(5, 62px); }
+      .block { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+<nav class="nav" id="nav">
+  <div class="container nav-inner">
+    <a href="/" class="nav-logo"><span class="logo-icon">龍</span><span class="logo-text">DragonTile</span></a>
+    <ul class="nav-links">
+      <li><a href="/" class="nav-link">Home</a></li>
+      <li class="nav-dropdown">
+        <span class="nav-link" style="cursor:pointer;">Games ▾</span>
+        <ul class="dropdown-menu">
+          <li><a href="/games/mahjong/">🀄 Mahjong</a></li>
+          <li><a href="/games/hanzi/">林 Hanzi Match</a></li>
+          <li><a href="/games/klotski/">🧩 Klotski</a></li>
+          <li><a href="/games/touhu/">🏺 Pitch-Pot</a></li>
+          <li><a href="/games/abacus/">🧮 Abacus</a></li>
+        </ul>
+      </li>
+      <li><a href="/how-to-play/#guide-klotski" class="nav-link">How to Play</a></li>
+      <li><a href="/#leaderboard" class="nav-link">Leaderboard</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="game-page">
+  <div class="game-header-bar">
+    <div class="container game-header-inner">
+      <div class="game-title-area">
+        <div class="game-breadcrumb"><a href="/">Home</a> / Games / <strong>Klotski</strong></div>
+        <h1>🧩 Klotski — Hua Rong Dao</h1>
+      </div>
+      <div class="game-stats-bar">
+        <div class="game-stat-item"><div class="game-stat-value" id="moveCount">0</div><div class="game-stat-label">Moves</div></div>
+        <div class="game-stat-item"><div class="game-stat-value" id="timerDisplay">00:00</div><div class="game-stat-label">Time</div></div>
+        <div class="game-stat-item"><div class="game-stat-value" id="bestMoves">81</div><div class="game-stat-label">Optimal</div></div>
+      </div>
+      <div class="game-actions">
+        <button class="btn btn-secondary btn-sm" id="undoBtn">↩ Undo</button>
+        <button class="btn btn-primary btn-sm" id="restartBtn">🔄 Restart</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container game-board-wrap">
+    <div class="level-select">
+      <button class="level-btn active" data-level="0">🏅 Classic (81)</button>
+      <button class="level-btn" data-level="1">⭐ Easy (18)</button>
+      <button class="level-btn" data-level="2">🎯 Medium (48)</button>
+      <button class="level-btn" data-level="3">🔥 Hard (116)</button>
+      <button class="level-btn" data-level="4">💀 Expert (200)</button>
+    </div>
+    <div class="legend">
+      <span><span class="legend-dot red"></span> Cao Cao 2×2</span>
+      <span><span class="legend-dot green"></span> Guan Yu 2×1</span>
+      <span><span class="legend-dot blue"></span> General 1×2</span>
+      <span><span class="legend-dot purple"></span> Soldier 1×1</span>
+    </div>
+    <div class="klotski-wrapper" id="klotskiWrapper">
+      <div class="klotski-grid" id="klotskiGrid"></div>
+    </div>
+    <div class="dpad" style="margin-top:var(--space-sm);">
+      <button class="dpad-btn up" id="dpadUp">▲</button>
+      <button class="dpad-btn left" id="dpadLeft">◄</button>
+      <button class="dpad-btn right" id="dpadRight">►</button>
+      <button class="dpad-btn down" id="dpadDown">▼</button>
+    </div>
+    <p style="color:var(--color-text-dim);text-align:center;font-size:0.85rem;max-width:500px;">
+      <strong>Click</strong> a block to select it (stays selected until you click another). Then <strong>click a highlight</strong>, use <strong>arrow keys</strong> or <strong>D-Pad</strong> to slide. Move "曹" to the <strong>▼ EXIT ▼</strong> at bottom!
+    </p>
+  </div>
+</div>
+
+<div class="modal-overlay" id="winModal">
+  <div class="modal">
+    <div class="modal-icon">🎉</div>
+    <h2>Cao Cao Escaped!</h2>
+    <p>You freed the warlord in <strong id="winMoves">0</strong> moves!</p>
+    <p style="color:var(--color-text-dim);">Time: <span id="winTime">00:00</span> | Optimal: <span id="winBest">81</span></p>
+    <div style="display:flex;gap:var(--space-sm);justify-content:center;margin-top:var(--space-lg);">
+      <button class="btn btn-primary" id="playAgainBtn">🔄 Play Again</button>
+      <a href="/" class="btn btn-secondary">🏠 Home</a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const ROWS = 5, COLS = 4;
+  const CELL_SIZE = 93; // 90px + 3px gap
+  const GAP = 3;
+
+  const LEVELS = [
+    // Level 0 – Classic 横刀立马 (81 optimal)
+    { name:'Classic', best:81, blocks:[
+      {id:'cc',char:'曹',css:'caocao',w:2,h:2,row:0,col:1},
+      {id:'gy',char:'关',css:'guanyu',w:2,h:1,row:2,col:1},
+      {id:'zf',char:'张',css:'general',w:1,h:2,row:0,col:0},
+      {id:'zy',char:'赵',css:'general',w:1,h:2,row:0,col:3},
+      {id:'mc',char:'马',css:'general',w:1,h:2,row:2,col:0},
+      {id:'hz',char:'黄',css:'general',w:1,h:2,row:2,col:3},
+      {id:'s1',char:'兵',css:'soldier',w:1,h:1,row:3,col:1},
+      {id:'s2',char:'兵',css:'soldier',w:1,h:1,row:3,col:2},
+      {id:'s3',char:'兵',css:'soldier',w:1,h:1,row:4,col:0},
+      {id:'s4',char:'兵',css:'soldier',w:1,h:1,row:4,col:3},
+    ]},
+    // Level 1 – Easy 近在咫尺 (18 optimal)
+    { name:'Easy', best:18, blocks:[
+      {id:'cc',char:'曹',css:'caocao',w:2,h:2,row:0,col:1},
+      {id:'gy',char:'关',css:'guanyu',w:2,h:1,row:2,col:0},
+      {id:'zf',char:'张',css:'general',w:1,h:2,row:0,col:0},
+      {id:'zy',char:'赵',css:'general',w:1,h:2,row:0,col:3},
+      {id:'s1',char:'兵',css:'soldier',w:1,h:1,row:2,col:2},
+      {id:'s2',char:'兵',css:'soldier',w:1,h:1,row:2,col:3},
+      {id:'s3',char:'兵',css:'soldier',w:1,h:1,row:3,col:2},
+      {id:'s4',char:'兵',css:'soldier',w:1,h:1,row:4,col:1},
+    ]},
+    // Level 2 – Medium (48 optimal)
+    { name:'Medium', best:48, blocks:[
+      {id:'cc',char:'曹',css:'caocao',w:2,h:2,row:0,col:1},
+      {id:'gy',char:'关',css:'guanyu',w:2,h:1,row:2,col:1},
+      {id:'zf',char:'张',css:'general',w:1,h:2,row:0,col:0},
+      {id:'mc',char:'马',css:'general',w:1,h:2,row:2,col:0},
+      {id:'zy',char:'赵',css:'general',w:1,h:2,row:2,col:3},
+      {id:'s1',char:'兵',css:'soldier',w:1,h:1,row:0,col:3},
+      {id:'s2',char:'兵',css:'soldier',w:1,h:1,row:3,col:1},
+      {id:'s3',char:'兵',css:'soldier',w:1,h:1,row:3,col:2},
+      {id:'s4',char:'兵',css:'soldier',w:1,h:1,row:4,col:0},
+      {id:'s5',char:'兵',css:'soldier',w:1,h:1,row:4,col:3},
+    ]},
+    // Level 3 – Hard 层层设防 (~116 optimal)
+    { name:'Hard', best:116, blocks:[
+      {id:'cc',char:'曹',css:'caocao',w:2,h:2,row:0,col:1},
+      {id:'gy',char:'关',css:'guanyu',w:2,h:1,row:2,col:1},
+      {id:'mc',char:'马',css:'general',w:1,h:2,row:0,col:0},
+      {id:'zy',char:'赵',css:'general',w:1,h:2,row:0,col:3},
+      {id:'hz',char:'黄',css:'general',w:1,h:2,row:2,col:3},
+      {id:'s1',char:'兵',css:'soldier',w:1,h:1,row:2,col:0},
+      {id:'s2',char:'兵',css:'soldier',w:1,h:1,row:3,col:1},
+      {id:'s3',char:'兵',css:'soldier',w:1,h:1,row:3,col:2},
+      {id:'s4',char:'兵',css:'soldier',w:1,h:1,row:4,col:0},
+      {id:'s5',char:'兵',css:'soldier',w:1,h:1,row:4,col:1},
+      {id:'s6',char:'兵',css:'soldier',w:1,h:1,row:4,col:3},
+    ]},
+    // Level 4 – Expert 天罗地网 (~200 optimal)
+    { name:'Expert', best:200, blocks:[
+      {id:'cc',char:'曹',css:'caocao',w:2,h:2,row:0,col:1},
+      {id:'gy',char:'关',css:'guanyu',w:2,h:1,row:2,col:1},
+      {id:'mc',char:'马',css:'general',w:1,h:2,row:0,col:0},
+      {id:'zf',char:'张',css:'general',w:1,h:2,row:2,col:0},
+      {id:'hz',char:'黄',css:'general',w:1,h:2,row:2,col:3},
+      {id:'s1',char:'兵',css:'soldier',w:1,h:1,row:0,col:3},
+      {id:'s2',char:'兵',css:'soldier',w:1,h:1,row:3,col:1},
+      {id:'s3',char:'兵',css:'soldier',w:1,h:1,row:3,col:2},
+      {id:'s4',char:'兵',css:'soldier',w:1,h:1,row:4,col:0},
+      {id:'s5',char:'兵',css:'soldier',w:1,h:1,row:4,col:3},
+    ]}
+  ];
+
+  let blocks = [], occupancy = [], selectedId = null, currentLevel = 0;
+  let moveCount = 0, moveHistory = [], timerSeconds = 0, timerInterval = null, gameOver = false;
+
+  const gridEl = document.querySelector('#klotskiGrid');
+  const moveCountEl = document.querySelector('#moveCount');
+  const timerEl = document.querySelector('#timerDisplay');
+  const bestEl = document.querySelector('#bestMoves');
+  const wrapperEl = document.querySelector('#klotskiWrapper');
+  const winModal = document.querySelector('#winModal');
+
+  function pad() { return CELL_SIZE + GAP; }
+
+  function initLevel(idx) {
+    currentLevel = idx; selectedId = null; moveCount = 0; moveHistory = []; gameOver = false;
+    stopTimer(); timerSeconds = 0; timerEl.textContent = '00:00';
+    const def = LEVELS[idx];
+    blocks = def.blocks.map(b => ({...b}));
+    bestEl.textContent = def.best; moveCountEl.textContent = '0';
+    buildOccupancy();
+    renderAll();
+    startTimer();
+    winModal.classList.remove('active');
+    document.querySelectorAll('.level-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
+  }
+
+  function buildOccupancy() {
+    occupancy = Array.from({length:ROWS}, () => Array(COLS).fill(null));
+    blocks.forEach(b => {
+      for (let r=b.row; r<b.row+b.h; r++)
+        for (let c=b.col; c<b.col+b.w; c++)
+          occupancy[r][c] = b.id;
+    });
+  }
+
+  function getBlock(id) { return blocks.find(b=>b.id===id); }
+
+  function canMove(block, dr, dc) {
+    const nr = block.row + dr, nc = block.col + dc;
+    if (nr<0 || nr+block.h>ROWS || nc<0 || nc+block.w>COLS) return false;
+    for (let r=nr; r<nr+block.h; r++)
+      for (let c=nc; c<nc+block.w; c++)
+        if (occupancy[r][c] !== null && occupancy[r][c] !== block.id) return false;
+    return true;
+  }
+
+  function getValidDirections(block) {
+    const dirs = [];
+    if (canMove(block, -1, 0)) dirs.push([-1,0,'up']);
+    if (canMove(block, 1, 0)) dirs.push([1,0,'down']);
+    if (canMove(block, 0, -1)) dirs.push([0,-1,'left']);
+    if (canMove(block, 0, 1)) dirs.push([0,1,'right']);
+    return dirs;
+  }
+
+  function moveBlock(block, dr, dc) {
+    moveHistory.push({id:block.id, row:block.row, col:block.col});
+    block.row += dr; block.col += dc;
+    moveCount++; moveCountEl.textContent = moveCount;
+    buildOccupancy();
+    // Keep the same block selected after move
+    renderAll(); checkWin();
+  }
+
+  function checkWin() {
+    const cc = getBlock('cc');
+    if (cc && cc.row === 3 && cc.col === 1 && !gameOver) {
+      gameOver = true; stopTimer();
+      document.querySelector('#winMoves').textContent = moveCount;
+      document.querySelector('#winTime').textContent = formatTime(timerSeconds);
+      document.querySelector('#winBest').textContent = LEVELS[currentLevel].best;
+      winModal.classList.add('active');
+    }
+  }
+
+  function undoMove() {
+    if (moveHistory.length===0 || gameOver) return;
+    const last = moveHistory.pop();
+    const block = getBlock(last.id);
+    if (!block) return;
+    block.row = last.row; block.col = last.col;
+    moveCount--; moveCountEl.textContent = moveCount;
+    selectedId = null; buildOccupancy(); renderAll();
+  }
+
+  function handleBlockClick(blockId) {
+    if (gameOver) return;
+    if (selectedId === blockId) { selectedId = null; renderAll(); return; }
+    selectedId = blockId;
+    renderAll();
+  }
+
+  function handleCellClick(row, col) {
+    if (gameOver || !selectedId) { selectedId = null; renderAll(); return; }
+    const block = getBlock(selectedId);
+    if (!block) return;
+    const dirs = getValidDirections(block);
+    for (const [dr, dc] of dirs) {
+      const nr = block.row+dr, nc = block.col+dc;
+      if (row>=nr && row<nr+block.h && col>=nc && col<nc+block.w) {
+        moveBlock(block, dr, dc); return;
+      }
+    }
+    // Clicked elsewhere — select block at that position or deselect
+    selectedId = occupancy[row][col];
+    renderAll();
+  }
+
+  function renderAll() {
+    // Render grid background cells
+    gridEl.innerHTML = '';
+    gridEl.style.position = 'relative';
+    const selBlock = selectedId ? getBlock(selectedId) : null;
+    const dirs = selBlock ? getValidDirections(selBlock) : [];
+
+    for (let r=0; r<ROWS; r++) {
+      for (let c=0; c<COLS; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'grid-cell';
+        cell.dataset.row = r; cell.dataset.col = c;
+        let isDest = false;
+        if (selBlock) {
+          for (const [dr,dc] of dirs) {
+            const nr = selBlock.row+dr, nc = selBlock.col+dc;
+            if (r>=nr && r<nr+selBlock.h && c>=nc && c<nc+selBlock.w) isDest = true;
+          }
+        }
+        if (isDest) cell.classList.add('highlight');
+        // Exit zone cells (bottom center)
+        if (r===4 && c>=1 && c<=2) {
+          cell.style.border = '1px dashed #c9a84c';
+          cell.style.background = '#1a1505';
+        }
+        cell.addEventListener('click', () => handleCellClick(r,c));
+        gridEl.appendChild(cell);
+      }
+    }
+
+    // Render blocks (absolute-positioned)
+    blocks.forEach(block => {
+      const el = document.createElement('div');
+      el.className = `block ${block.css}`;
+      el.textContent = block.char;
+      el.style.left = (block.col * pad()) + 'px';
+      el.style.top = (block.row * pad()) + 'px';
+      el.style.width = (block.w * CELL_SIZE + (block.w-1)*GAP) + 'px';
+      el.style.height = (block.h * CELL_SIZE + (block.h-1)*GAP) + 'px';
+      if (block.id === 'cc') el.style.fontSize = '2.5rem';
+      if (selectedId === block.id) el.classList.add('selected');
+      el.addEventListener('click', (e) => { e.stopPropagation(); handleBlockClick(block.id); });
+      gridEl.appendChild(el);
+    });
+
+    // EXIT label — rendered AFTER blocks so it sits on top (z-index:20, CSS % positioning)
+    let exitLabel = gridEl.querySelector('.exit-label');
+    if (!exitLabel) {
+      exitLabel = document.createElement('div');
+      exitLabel.className = 'exit-label';
+      gridEl.appendChild(exitLabel);
+    }
+  }
+
+  function formatTime(s) {
+    return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
+  }
+  function startTimer() {
+    stopTimer();
+    timerInterval = setInterval(() => { if(!gameOver){timerSeconds++;timerEl.textContent=formatTime(timerSeconds);} }, 1000);
+  }
+  function stopTimer() { if(timerInterval){clearInterval(timerInterval);timerInterval=null;} }
+
+  // D-pad controls
+  function handleDirection(dr, dc) {
+    if (gameOver) return;
+    if (!selectedId) {
+      // Auto-select first movable block (e.g. Cao Cao)
+      selectedId = 'cc';
+      renderAll();
+      return;
+    }
+    const block = getBlock(selectedId);
+    if (!block) return;
+    if (canMove(block, dr, dc)) { moveBlock(block, dr, dc); }
+  }
+
+  // Keyboard controls
+  document.addEventListener('keydown', (e) => {
+    if (gameOver) return;
+    switch(e.key) {
+      case 'ArrowUp': e.preventDefault(); handleDirection(-1,0); break;
+      case 'ArrowDown': e.preventDefault(); handleDirection(1,0); break;
+      case 'ArrowLeft': e.preventDefault(); handleDirection(0,-1); break;
+      case 'ArrowRight': e.preventDefault(); handleDirection(0,1); break;
+    }
+  });
+
+  document.querySelector('#dpadUp').addEventListener('click', () => handleDirection(-1,0));
+  document.querySelector('#dpadDown').addEventListener('click', () => handleDirection(1,0));
+  document.querySelector('#dpadLeft').addEventListener('click', () => handleDirection(0,-1));
+  document.querySelector('#dpadRight').addEventListener('click', () => handleDirection(0,1));
+
+  document.querySelector('#restartBtn').addEventListener('click', () => initLevel(currentLevel));
+  document.querySelector('#playAgainBtn').addEventListener('click', () => initLevel(currentLevel));
+  document.querySelector('#undoBtn').addEventListener('click', undoMove);
+  document.querySelectorAll('.level-btn').forEach(btn => {
+    btn.addEventListener('click', () => initLevel(parseInt(btn.dataset.level)));
+  });
+
+  initLevel(0);
+})();
+</script>
+</body>
+</html>

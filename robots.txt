@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /workers/
+
+Sitemap: https://dragontile.games/sitemap.xml

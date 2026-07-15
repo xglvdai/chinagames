@@ -1,0 +1,23 @@
+# DragonTile Games — Cloudflare Worker API
+# Leaderboard and game data backend
+
+name = "dragontile-api"
+main = "src/index.js"
+compatibility_date = "2026-07-01"
+
+# D1 Database for scores
+[[d1_databases]]
+binding = "DB"
+database_name = "dragontile-db"
+database_id = "your-database-id-here"
+
+# KV namespace for config/sessions
+[[kv_namespaces]]
+binding = "KV"
+id = "your-kv-id-here"
+
+[env.production]
+name = "dragontile-api-prod"
+
+[vars]
+ALLOWED_ORIGINS = "https://dragontile.games,https://www.dragontile.games"

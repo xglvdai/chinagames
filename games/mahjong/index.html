@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Mahjong Solitaire — 10 Levels | DragonTile Games</title>
+  <meta name="description" content="Play free Mahjong Solitaire with 10 progressive levels. Match identical tiles to clear the board. Track your best level and time!">
+  <link rel="canonical" href="https://dragontile.games/games/mahjong/">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .game-page { padding-top: var(--nav-height); min-height: 100vh; background: var(--color-bg); }
+    .game-header-bar { background: var(--color-bg-alt); border-bottom: 1px solid var(--color-border); padding: var(--space-md) 0; }
+    .game-header-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-md); }
+    .game-title-area h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .game-breadcrumb { font-size: 0.8rem; color: var(--color-text-muted); }
+    .game-breadcrumb a { color: var(--color-gold); }
+    .game-stats-bar { display: flex; gap: var(--space-lg); }
+    .game-stat-item { text-align: center; }
+    .game-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--color-gold-light); font-family: var(--font-display); }
+    .game-stat-label { font-size: 0.7rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .game-actions { display: flex; gap: var(--space-sm); }
+    .game-board-wrap { padding: var(--space-xl) 0; display: flex; flex-direction: column; align-items: center; gap: var(--space-xl); }
+    .board-container { position: relative; background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); box-shadow: var(--shadow-lg); display: flex; align-items: center; justify-content: center; min-height: 500px; }
+    #mahjongBoard { display: grid; gap: 2px; }
+    .mahjong-tile { background: linear-gradient(145deg, #f5f0e8, #e8e0d0); border: 2px solid #c4a97d; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s ease; position: relative; user-select: none; -webkit-tap-highlight-color: transparent; width: 80px; height: 96px; font-size: 3.6rem; }
+    .mahjong-tile:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .mahjong-tile:active { transform: scale(0.95); }
+    .mahjong-tile.blocked { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+    .mahjong-tile.selected { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(230,57,70,0.4); background: linear-gradient(145deg, #fff5f0, #ffe8e0); transform: translateY(-3px); }
+    .mahjong-tile.removed { visibility: hidden; pointer-events: none; }
+    .mahjong-tile.matched { animation: tileMatch 0.4s ease forwards; }
+    @keyframes tileMatch { 0%{transform:scale(1);opacity:1;} 50%{transform:scale(1.15);opacity:0.7;border-color:var(--color-gold);} 100%{transform:scale(0);opacity:0;} }
+    .empty-cell { width: 80px; height: 96px; }
+    .game-controls-bar { display: flex; gap: var(--space-md); flex-wrap: wrap; justify-content: center; }
+    .level-select { display: flex; gap: var(--space-xs); flex-wrap: wrap; justify-content: center; margin-bottom: var(--space-sm); }
+    .level-dot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--color-border); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all var(--transition-fast); color: var(--color-text-dim); background: var(--color-bg-card); }
+    .level-dot:hover { border-color: var(--color-gold); }
+    .level-dot.active { border-color: var(--color-gold); background: var(--color-gold); color: var(--color-bg); }
+    .level-dot.completed { border-color: var(--color-jade); background: rgba(78,205,196,0.15); color: var(--color-jade); }
+    .level-dot.locked { opacity: 0.4; cursor: not-allowed; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal { background: var(--color-bg-card); border: 1px solid var(--color-gold-dark); border-radius: var(--radius-xl); padding: var(--space-2xl); text-align: center; max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.6); animation: modalIn 0.4s ease; }
+    @keyframes modalIn { from{transform:scale(0.9) translateY(20px);opacity:0;} to{transform:scale(1) translateY(0);opacity:1;} }
+    .modal-icon { font-size: 4rem; margin-bottom: var(--space-md); }
+    .modal h2 { margin-bottom: var(--space-sm); }
+    .final-score { font-size: 3rem; font-weight: 900; color: var(--color-gold-light); font-family: var(--font-display); }
+    .combo-indicator { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 2rem; font-weight: 900; color: var(--color-gold-light); font-family: var(--font-display); pointer-events: none; z-index: 1500; opacity: 0; transition: all 0.6s ease; }
+    .combo-indicator.show { opacity: 1; transform: translate(-50%,-80%); }
+    .hint-highlight { animation: hintPulse 0.8s ease 3; }
+    @keyframes hintPulse { 0%,100%{border-color:var(--color-gold);box-shadow:0 0 0 0 rgba(201,168,76,0.5);} 50%{border-color:var(--color-gold-light);box-shadow:0 0 0 8px rgba(201,168,76,0);} }
+    @media (max-width: 900px) { .mahjong-tile{width:60px;height:74px;font-size:2.8rem;} .empty-cell{width:60px;height:74px;} .board-container{padding:var(--space-sm);overflow-x:auto;} .game-stats-bar{gap:var(--space-md);} .game-header-inner{flex-direction:column;align-items:flex-start;} }
+    @media (max-width: 500px) { .mahjong-tile{width:46px;height:56px;font-size:2rem;} .empty-cell{width:46px;height:56px;} }
+  </style>
+</head>
+<body>
+<nav class="nav" id="nav">
+  <div class="container nav-inner">
+    <a href="/" class="nav-logo"><span class="logo-icon">龍</span><span class="logo-text">DragonTile</span></a>
+    <ul class="nav-links">
+      <li><a href="/" class="nav-link">Home</a></li>
+      <li class="nav-dropdown">
+        <span class="nav-link" style="cursor:pointer;">Games ▾</span>
+        <ul class="dropdown-menu">
+          <li><a href="/games/mahjong/">🀄 Mahjong</a></li>
+          <li><a href="/games/hanzi/">林 Hanzi Match</a></li>
+          <li><a href="/games/klotski/">🧩 Klotski</a></li>
+          <li><a href="/games/touhu/">🏺 Pitch-Pot</a></li>
+          <li><a href="/games/abacus/">🧮 Abacus</a></li>
+        </ul>
+      </li>
+      <li><a href="/how-to-play/#guide-mahjong" class="nav-link">How to Play</a></li>
+      <li><a href="/#leaderboard" class="nav-link">Leaderboard</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="game-page">
+  <div class="game-header-bar">
+    <div class="container game-header-inner">
+      <div class="game-title-area">
+        <div class="game-breadcrumb"><a href="/">Home</a> / Games / <strong>Mahjong Solitaire</strong></div>
+        <h1>🀄 Mahjong Solitaire</h1>
+      </div>
+      <div class="game-stats-bar">
+        <div class="game-stat-item"><div class="game-stat-value" id="scoreDisplay">0</div><div class="game-stat-label">Score</div></div>
+        <div class="game-stat-item"><div class="game-stat-value" id="timerDisplay">00:00</div><div class="game-stat-label">Time</div></div>
+        <div class="game-stat-item"><div class="game-stat-value" id="levelDisplay">Level 1</div><div class="game-stat-label">Current</div></div>
+        <div class="game-stat-item"><div class="game-stat-value" id="pairsLeft">0</div><div class="game-stat-label">Pairs Left</div></div>
+        <div class="game-stat-item"><div class="game-stat-value" id="bestLevel">1</div><div class="game-stat-label">Best Lvl</div></div>
+      </div>
+      <div class="game-actions">
+        <button class="btn btn-secondary btn-sm" id="hintBtn">💡 Hint</button>
+        <button class="btn btn-secondary btn-sm" id="shuffleBtn">🔀 Shuffle</button>
+        <button class="btn btn-primary btn-sm" id="restartBtn">🔄 Restart</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container game-board-wrap">
+    <div class="level-select" id="levelDots"></div>
+    <div class="board-container" id="boardContainer">
+      <div id="mahjongBoard"></div>
+    </div>
+    <div class="game-controls-bar">
+      <span style="color:var(--color-text-dim);font-size:0.85rem;max-width:550px;text-align:center;">
+        Match identical free tiles (not blocked left AND right). Clear all pairs to advance!
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="combo-indicator" id="comboIndicator"></div>
+
+<div class="modal-overlay" id="winModal">
+  <div class="modal">
+    <div class="modal-icon">🎉</div>
+    <h2 id="winTitle">Level Complete!</h2>
+    <p id="winMsg">You cleared the board!</p>
+    <div class="final-score" id="finalScore">0</div>
+    <div style="color:var(--color-text-dim);margin-bottom:0.5rem;">Time: <span id="finalTime">00:00</span></div>
+    <div style="display:flex;gap:var(--space-sm);justify-content:center;margin-top:var(--space-md);">
+      <button class="btn btn-primary" id="nextLevelBtn">▶ Next Level</button>
+      <a href="/" class="btn btn-secondary">🏠 Home</a>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="noMovesModal">
+  <div class="modal">
+    <div class="modal-icon">😵</div>
+    <h2>No Moves Left!</h2>
+    <p>No more valid pairs on the board.</p>
+    <div style="display:flex;gap:var(--space-sm);justify-content:center;margin-top:var(--space-lg);">
+      <button class="btn btn-primary" id="shuffleFromNoMoves">🔀 Shuffle</button>
+      <button class="btn btn-secondary" id="restartFromNoMoves">🔄 Restart</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const TILE_SET = ['🀇','🀈','🀉','🀊','🀋','🀌','🀍','🀎','🀏','🀙','🀚','🀛','🀜','🀝','🀞','🀟','🀠','🀡','🀐','🀑','🀒','🀓','🀔','🀕','🀖','🀗','🀘','🀀','🀁','🀂','🀃','🀄','🀅','🀆'];
+
+  // Level definitions: rows x cols -> pairs
+  const LEVELS = [
+    { name:'Level 1 - Beginner', rows:4, cols:4, pairs:8 },
+    { name:'Level 2 - Easy',     rows:4, cols:6, pairs:12 },
+    { name:'Level 3 - Moderate', rows:4, cols:6, pairs:12 },
+    { name:'Level 4 - Steady',   rows:5, cols:6, pairs:15 },
+    { name:'Level 5 - Tricky',   rows:5, cols:6, pairs:15 },
+    { name:'Level 6 - Challenger',rows:6, cols:6, pairs:18 },
+    { name:'Level 7 - Hard',     rows:6, cols:8, pairs:24 },
+    { name:'Level 8 - Expert',   rows:6, cols:8, pairs:24 },
+    { name:'Level 9 - Master',   rows:6, cols:10, pairs:30 },
+    { name:'Level 10 - Grandmaster',rows:6, cols:10, pairs:30 },
+  ];
+
+  let currentLevelIdx = 0;
+  let bestLevel = parseInt(localStorage.getItem('mahjong_best_level') || '1');
+  let board = [], score = 0, pairsMatched = 0, totalPairs = 0;
+  let comboCount = 0, comboTimer = null, selectedTile = null;
+  let timerSeconds = 0, totalTime = parseInt(localStorage.getItem('mahjong_total_time') || '0');
+  let timerInterval = null, isPaused = false, moveHistory = [], gameOver = false;
+  let rows, cols;
+
+  const boardEl = document.querySelector('#mahjongBoard');
+  const scoreDisplay = document.querySelector('#scoreDisplay');
+  const timerDisplay = document.querySelector('#timerDisplay');
+  const levelDisplay = document.querySelector('#levelDisplay');
+  const pairsLeftDisplay = document.querySelector('#pairsLeft');
+  const bestLevelDisplay = document.querySelector('#bestLevel');
+  const comboIndicator = document.querySelector('#comboIndicator');
+  const winModal = document.querySelector('#winModal');
+  const noMovesModal = document.querySelector('#noMovesModal');
+
+  function formatTime(s) {
+    return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
+  }
+
+  function updateUI() {
+    scoreDisplay.textContent = score;
+    timerDisplay.textContent = formatTime(timerSeconds);
+    levelDisplay.textContent = LEVELS[currentLevelIdx].name;
+    pairsLeftDisplay.textContent = totalPairs - pairsMatched;
+    bestLevelDisplay.textContent = bestLevel;
+  }
+
+  function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      if (!isPaused && !gameOver) { timerSeconds++; updateUI(); }
+    }, 1000);
+  }
+  function stopTimer() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
+
+  function generateBoard() {
+    const lvl = LEVELS[currentLevelIdx];
+    rows = lvl.rows; cols = lvl.cols; totalPairs = lvl.pairs;
+    const pool = [];
+    const tileCount = TILE_SET.length;
+    while (pool.length < totalPairs) {
+      pool.push(TILE_SET[Math.floor(Math.random() * tileCount)]);
+    }
+    const allTiles = [...pool, ...pool];
+    for (let i = allTiles.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allTiles[i], allTiles[j]] = [allTiles[j], allTiles[i]];
+    }
+    board = [];
+    let idx = 0;
+    for (let r = 0; r < rows; r++) {
+      board[r] = [];
+      for (let c = 0; c < cols; c++) {
+        board[r][c] = { tile: allTiles[idx], removed: false, row: r, col: c };
+        idx++;
+      }
+    }
+  }
+
+  function isTileFree(r, c) {
+    if (r < 0 || r >= rows || c < 0 || c >= cols) return false;
+    if (board[r][c].removed) return false;
+    let blockedLeft = false, blockedRight = false;
+    for (let cc = c - 1; cc >= 0; cc--) { if (!board[r][cc].removed) { blockedLeft = true; break; } }
+    for (let cc = c + 1; cc < cols; cc++) { if (!board[r][cc].removed) { blockedRight = true; break; } }
+    return !(blockedLeft && blockedRight);
+  }
+
+  function findValidPairs() {
+    const free = [];
+    for (let r = 0; r < rows; r++)
+      for (let c = 0; c < cols; c++)
+        if (!board[r][c].removed && isTileFree(r, c))
+          free.push({ row: r, col: c, tile: board[r][c].tile });
+    const pairs = [];
+    for (let i = 0; i < free.length; i++)
+      for (let j = i + 1; j < free.length; j++)
+        if (free[i].tile === free[j].tile)
+          pairs.push([free[i], free[j]]);
+    return pairs;
+  }
+
+  function checkGameEnd() {
+    if (gameOver) return;
+    const remaining = board.flat().filter(t => !t.removed).length;
+    if (remaining === 0) {
+      gameOver = true; stopTimer();
+      totalTime += timerSeconds;
+      localStorage.setItem('mahjong_total_time', totalTime);
+      document.querySelector('#finalScore').textContent = score;
+      document.querySelector('#finalTime').textContent = formatTime(timerSeconds);
+      if (currentLevelIdx + 1 > bestLevel) {
+        bestLevel = currentLevelIdx + 1;
+        localStorage.setItem('mahjong_best_level', bestLevel);
+        bestLevelDisplay.textContent = bestLevel;
+      }
+      if (currentLevelIdx < LEVELS.length - 1) {
+        document.querySelector('#winTitle').textContent = 'Level Complete!';
+        document.querySelector('#winMsg').textContent = 'You cleared ' + LEVELS[currentLevelIdx].name + '!';
+        document.querySelector('#nextLevelBtn').style.display = '';
+      } else {
+        document.querySelector('#winTitle').textContent = 'Grandmaster!';
+        document.querySelector('#winMsg').textContent = 'You completed ALL 10 levels! Total time: ' + formatTime(totalTime);
+        document.querySelector('#nextLevelBtn').style.display = 'none';
+      }
+      winModal.classList.add('active');
+    } else {
+      if (findValidPairs().length === 0) noMovesModal.classList.add('active');
+    }
+  }
+
+  function handleTileClick(row, col) {
+    if (gameOver || isPaused || board[row][col].removed || !isTileFree(row, col)) return;
+    if (selectedTile === null) { selectedTile = { row, col }; renderBoard(); return; }
+    if (selectedTile.row === row && selectedTile.col === col) { selectedTile = null; renderBoard(); return; }
+    const other = board[selectedTile.row][selectedTile.col];
+    if (board[row][col].tile === other.tile) {
+      comboCount++;
+      const bonus = comboCount > 1 ? comboCount * 5 : 0;
+      score += 10 + bonus;
+      board[row][col].removed = true;
+      other.removed = true;
+      pairsMatched++;
+      moveHistory.push({ row: selectedTile.row, col: selectedTile.col });
+      moveHistory.push({ row, col });
+      selectedTile = null;
+      updateUI();
+      if (comboCount > 1) { comboIndicator.textContent = `🔥 ${comboCount}x Combo!`; comboIndicator.classList.add('show'); setTimeout(() => comboIndicator.classList.remove('show'), 800); }
+      if (comboTimer) clearTimeout(comboTimer);
+      comboTimer = setTimeout(() => { comboCount = 0; updateUI(); }, 3000);
+      renderBoard();
+      setTimeout(checkGameEnd, 300);
+    } else { selectedTile = { row, col }; comboCount = 0; updateUI(); renderBoard(); }
+  }
+
+  function renderBoard() {
+    boardEl.style.gridTemplateColumns = `repeat(${cols}, auto)`;
+    boardEl.innerHTML = '';
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const cell = board[r][c];
+        if (cell.removed) {
+          const d = document.createElement('div'); d.className = 'empty-cell'; boardEl.appendChild(d);
+        } else {
+          const el = document.createElement('div');
+          el.className = 'mahjong-tile'; el.textContent = cell.tile;
+          if (!isTileFree(r, c)) el.classList.add('blocked');
+          if (selectedTile && selectedTile.row === r && selectedTile.col === c) el.classList.add('selected');
+          el.addEventListener('click', () => handleTileClick(r, c));
+          boardEl.appendChild(el);
+        }
+      }
+    }
+  }
+
+  function renderLevelDots() {
+    const container = document.querySelector('#levelDots');
+    container.innerHTML = '';
+    for (let i = 0; i < LEVELS.length; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'level-dot';
+      dot.textContent = i + 1;
+      if (i === currentLevelIdx) dot.classList.add('active');
+      else if (i < bestLevel) dot.classList.add('completed');
+      else dot.classList.add('locked');
+      if (i < bestLevel) dot.addEventListener('click', () => startLevel(i));
+      container.appendChild(dot);
+    }
+  }
+
+  function startLevel(idx) {
+    currentLevelIdx = idx;
+    stopTimer(); timerSeconds = 0; score = 0; pairsMatched = 0; comboCount = 0;
+    selectedTile = null; moveHistory = []; gameOver = false; isPaused = false;
+    generateBoard();
+    updateUI();
+    renderBoard();
+    renderLevelDots();
+    startTimer();
+    winModal.classList.remove('active');
+    noMovesModal.classList.remove('active');
+  }
+
+  function shuffleBoard() {
+    const remaining = [];
+    for (let r = 0; r < rows; r++)
+      for (let c = 0; c < cols; c++)
+        if (!board[r][c].removed) remaining.push(board[r][c].tile);
+    for (let i = remaining.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [remaining[i], remaining[j]] = [remaining[j], remaining[i]]; }
+    let idx = 0;
+    for (let r = 0; r < rows; r++)
+      for (let c = 0; c < cols; c++)
+        if (!board[r][c].removed) { board[r][c].tile = remaining[idx]; idx++; }
+    selectedTile = null; moveHistory = [];
+    renderBoard(); noMovesModal.classList.remove('active');
+  }
+
+  function provideHint() {
+    const pairs = findValidPairs();
+    if (!pairs.length) return;
+    const pair = pairs[Math.floor(Math.random() * pairs.length)];
+    document.querySelectorAll('.mahjong-tile').forEach(t => t.classList.remove('hint-highlight'));
+    const allTiles = boardEl.querySelectorAll('.mahjong-tile');
+    let tileIdx = 0;
+    for (let r = 0; r < rows; r++)
+      for (let c = 0; c < cols; c++)
+        if (!board[r][c].removed) {
+          if ((r === pair[0].row && c === pair[0].col) || (r === pair[1].row && c === pair[1].col))
+            allTiles[tileIdx]?.classList.add('hint-highlight');
+          tileIdx++;
+        }
+  }
+
+  document.querySelector('#restartBtn').addEventListener('click', () => startLevel(currentLevelIdx));
+  document.querySelector('#restartFromNoMoves').addEventListener('click', () => startLevel(currentLevelIdx));
+  document.querySelector('#nextLevelBtn').addEventListener('click', () => {
+    if (currentLevelIdx < LEVELS.length - 1) startLevel(currentLevelIdx + 1);
+  });
+  document.querySelector('#hintBtn').addEventListener('click', provideHint);
+  document.querySelector('#shuffleBtn').addEventListener('click', shuffleBoard);
+  document.querySelector('#shuffleFromNoMoves').addEventListener('click', shuffleBoard);
+
+  // Init
+  bestLevelDisplay.textContent = bestLevel;
+  startLevel(bestLevel - 1);
+})();
+</script>
+</body>
+</html>

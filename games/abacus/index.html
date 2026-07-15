@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Abacus Enigma — Bead Puzzle | DragonTile Games</title>
+  <meta name="description" content="Slide abacus beads to solve number puzzles. Each column: 1 heaven bead (5) + 5 earth beads (1 each). Match the target number!">
+  <link rel="canonical" href="https://dragontile.games/games/abacus/">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .game-page { padding-top: var(--nav-height); min-height: 100vh; background: var(--color-bg); }
+    .game-header-bar { background: var(--color-bg-alt); border-bottom: 1px solid var(--color-border); padding: var(--space-md) 0; }
+    .game-header-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-md); }
+    .game-title-area h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .game-breadcrumb { font-size: 0.8rem; color: var(--color-text-muted); }
+    .game-breadcrumb a { color: var(--color-gold); }
+    .game-stats-bar { display: flex; gap: var(--space-lg); }
+    .game-stat-item { text-align: center; }
+    .game-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--color-gold-light); font-family: var(--font-display); }
+    .game-stat-label { font-size: 0.7rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .game-actions { display: flex; gap: var(--space-sm); }
+    .game-board-wrap { padding: var(--space-xl) 0; display: flex; flex-direction: column; align-items: center; gap: var(--space-lg); }
+
+    .target-display { text-align: center; }
+    .target-number { font-size: 4rem; font-weight: 900; color: var(--color-gold-light); font-family: var(--font-display); text-shadow: 0 0 30px rgba(201,168,76,0.4); }
+    .target-label { color: var(--color-text-dim); font-size: 0.85rem; margin-top: 0.25rem; }
+
+    .abacus-frame {
+      background: linear-gradient(145deg, #2d1f0e, #4a3020);
+      border: 5px solid #8B6914;
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg) var(--space-2xl);
+      box-shadow: var(--shadow-lg), inset 0 0 30px rgba(0,0,0,0.3);
+    }
+    .abacus-content { display: flex; gap: var(--space-md); align-items: flex-end; }
+    .abacus-column { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .col-place { font-size: 0.75rem; color: var(--color-gold); font-weight: 700; margin-bottom: 3px; text-transform: uppercase; }
+    .col-value-display { font-size: 0.7rem; font-weight: 700; color: var(--color-gold-light); min-height: 16px; margin-top: 2px; }
+    .col-current-val { font-size: 1.4rem; font-weight: 800; color: var(--color-gold-light); font-family: var(--font-display); }
+
+    .rod { width: 6px; background: #8B4513; border-radius: 3px; }
+
+    .bead-btn {
+      width: 68px; height: 34px;
+      border-radius: 17px; border: 3px solid; cursor: pointer;
+      transition: all 0.15s ease;
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 700; color: rgba(255,255,255,0.7);
+    }
+    .bead-btn:hover { filter: brightness(1.3); transform: scale(1.05); }
+
+    /* Heaven bead: red, slides DOWN from top = active */
+    .bead-btn.heaven { background: linear-gradient(180deg, #e63946, #b01020); border-color: #780000; }
+    .bead-btn.heaven.active { background: linear-gradient(180deg, #ff4d4d, #e63946); box-shadow: 0 0 10px rgba(255,60,60,0.4); }
+    .bead-btn.heaven:not(.active) { opacity: 0.6; }
+
+    /* Earth bead: blue, slides UP from bottom = active */
+    .bead-btn.earth { background: linear-gradient(180deg, #457b9d, #1d3557); border-color: #1a2a3a; }
+    .bead-btn.earth.active { background: linear-gradient(180deg, #6ea8cc, #457b9d); box-shadow: 0 0 10px rgba(100,160,200,0.4); }
+    .bead-btn.earth:not(.active) { opacity: 0.6; }
+
+    .beam { height: 8px; background: #e8c96a; border-radius: 4px; margin: 6px 0; box-shadow: 0 0 6px rgba(232,201,106,0.4); }
+
+    .result-display { font-size: 1.1rem; font-weight: 700; min-height: 1.8rem; text-align: center; }
+    .result-display.correct { color: var(--color-jade); }
+    .result-display.wrong { color: var(--color-primary-light); }
+
+    .progress-bar-wrap { display: flex; align-items: center; gap: var(--space-sm); }
+    .progress-bar { width: 180px; height: 6px; background: var(--color-bg-card); border-radius: var(--radius-full); overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--color-jade); border-radius: var(--radius-full); transition: width 0.3s; }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal { background: var(--color-bg-card); border: 1px solid var(--color-gold-dark); border-radius: var(--radius-xl); padding: var(--space-2xl); text-align: center; max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.6); animation: modalIn 0.4s ease; }
+    @keyframes modalIn { from{transform:scale(0.9) translateY(20px);opacity:0;} to{transform:scale(1) translateY(0);opacity:1;} }
+    .modal-icon { font-size: 4rem; margin-bottom: var(--space-md); }
+
+    .help-text { color: var(--color-text-dim); font-size: 0.82rem; text-align: center; max-width: 550px; line-height: 1.7; }
+    .help-text strong { color: var(--color-gold-light); }
+    .help-text .red { color: #e63946; }
+    .help-text .blue { color: #457b9d; }
+
+    @media (max-width: 600px) {
+      .bead-btn { width: 50px; height: 26px; border-radius: 13px; font-size: 0.62rem; }
+      .target-number { font-size: 2.5rem; }
+      .abacus-frame { padding: var(--space-md) var(--space-lg); }
+      .col-place { font-size: 0.6rem; }
+      .col-current-val { font-size: 1.1rem; }
+      .beam { height: 6px; margin: 4px 0; }
+      .abacus-content { gap: var(--space-sm); }
+    }
+  </style>
+</head>
+<body>
+<nav class="nav" id="nav">
+  <div class="container nav-inner">
+    <a href="/" class="nav-logo"><span class="logo-icon">龍</span><span class="logo-text">DragonTile</span></a>
+    <ul class="nav-links">
+      <li><a href="/" class="nav-link">Home</a></li>
+      <li class="nav-dropdown">
+        <span class="nav-link" style="cursor:pointer;">Games ▾</span>
+        <ul class="dropdown-menu">
+          <li><a href="/games/mahjong/">🀄 Mahjong</a></li>
+          <li><a href="/games/hanzi/">林 Hanzi Match</a></li>
+          <li><a href="/games/klotski/">🧩 Klotski</a></li>
+          <li><a href="/games/touhu/">🏺 Pitch-Pot</a></li>
+          <li><a href="/games/abacus/">🧮 Abacus</a></li>
+        </ul>
+      </li>
+      <li><a href="/how-to-play/#guide-abacus" class="nav-link">How to Play</a></li>
+      <li><a href="/#leaderboard" class="nav-link">Leaderboard</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="game-page">
+  <div class="game-header-bar">
+    <div class="container game-header-inner">
+      <div class="game-title-area">
+        <div class="game-breadcrumb"><a href="/">Home</a> / Games / <strong>Abacus Enigma</strong></div>
+        <h1>🧮 Abacus Enigma</h1>
+      </div>
+      <div class="game-stats-bar">
+        <div class="game-stat-item"><div class="game-stat-value" id="scoreDisplay">0</div><div class="game-stat-label">Score</div></div>
+        <div class="game-stat-item"><div class="game-stat-value" id="roundDisplay">1/15</div><div class="game-stat-label">Round</div></div>
+        <div class="game-stat-item"><div class="game-stat-value" id="timerDisplay">00:00</div><div class="game-stat-label">Time</div></div>
+      </div>
+      <div class="game-actions">
+        <button class="btn btn-secondary btn-sm" id="resetBtn">↺ Reset</button>
+        <button class="btn btn-secondary btn-sm" id="skipBtn">⏭ Skip</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container game-board-wrap">
+    <div class="progress-bar-wrap">
+      <span style="font-size:0.8rem;color:var(--color-text-dim);">Progress</span>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:6.7%"></div></div>
+      <span style="font-size:0.8rem;color:var(--color-text-dim);" id="progressText">1/15</span>
+    </div>
+
+    <div class="target-display">
+      <div class="target-number" id="targetNumber">0</div>
+      <div class="target-label">Set the abacus to match this number</div>
+    </div>
+
+    <div class="abacus-frame">
+      <div class="abacus-content" id="abacusContent"></div>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:var(--space-lg);">
+      <div style="font-size:1.4rem;font-weight:800;color:var(--color-text);font-family:var(--font-display);">Your value: <span id="currentTotal" style="color:var(--color-gold-light);">0</span></div>
+      <span style="font-size:0.8rem;color:var(--color-text-dim);" id="matchDiff"></span>
+    </div>
+
+    <div class="result-display" id="resultDisplay"></div>
+
+    <button class="btn btn-primary" id="submitBtn">✓ Submit Answer</button>
+
+    <p class="help-text">
+      <strong>How to use:</strong> Click <span class="red">● Heaven beads</span> to toggle them (= <strong>5</strong> per column).
+      Click <span class="blue">● Earth beads</span> to toggle them (= <strong>1</strong> each). 
+      Each column adds up: <strong>(Heaven × 5) + (Earth × 1)</strong>. 
+      Match the target number — column positions are <strong>10K | 1K | 100 | 10 | 1</strong>
+    </p>
+  </div>
+</div>
+
+<div class="modal-overlay" id="completeModal">
+  <div class="modal">
+    <div class="modal-icon">🧮</div>
+    <h2>Abacus Master!</h2>
+    <p>Final Score: <strong id="finalScore">0</strong></p>
+    <p style="color:var(--color-text-dim);">Time: <span id="finalTime">00:00</span></p>
+    <div style="display:flex;gap:var(--space-sm);justify-content:center;margin-top:var(--space-lg);">
+      <button class="btn btn-primary" id="restartAllBtn">🔄 Play Again</button>
+      <a href="/" class="btn btn-secondary">🏠 Home</a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const COLUMNS = 5; // 10K, 1K, 100, 10, 1
+  const MAX_ROUNDS = 15;
+
+  // heavenBeads[col] = 0 or 1 (heaven bead is worth 5 when active)
+  // earthBeads[col] = 0 to 5 (each earth bead is worth 1)
+  let heavenBeads = Array(COLUMNS).fill(0);
+  let earthBeads = Array(COLUMNS).fill(0);
+  let currentRound = 0, score = 0, targetNumber = 0;
+  let timerSeconds = 0, timerInterval = null, gameOver = false;
+
+  function generateTarget() {
+    const difficulty = Math.floor(currentRound / 5); // 0, 1, 2
+    if (difficulty === 0) targetNumber = Math.floor(Math.random() * 99) + 1; // 1-99
+    else if (difficulty === 1) targetNumber = Math.floor(Math.random() * 999) + 10; // 10-999
+    else targetNumber = Math.floor(Math.random() * 9999) + 100; // 100-9999
+    document.querySelector('#targetNumber').textContent = targetNumber.toLocaleString();
+  }
+
+  function getColumnValue(col) {
+    return heavenBeads[col] * 5 + earthBeads[col];
+  }
+
+  function getTotalValue() {
+    let total = 0;
+    for (let col = 0; col < COLUMNS; col++) {
+      total += getColumnValue(col) * Math.pow(10, COLUMNS - 1 - col);
+    }
+    return total;
+  }
+
+  function resetBeads() {
+    heavenBeads = Array(COLUMNS).fill(0);
+    earthBeads = Array(COLUMNS).fill(0);
+  }
+
+  function renderAbacus() {
+    const container = document.querySelector('#abacusContent');
+    const places = ['10K', '1K', '100', '10', '1'];
+
+    container.innerHTML = '';
+
+    for (let col = 0; col < COLUMNS; col++) {
+      const column = document.createElement('div');
+      column.className = 'abacus-column';
+
+      // Place label
+      const place = document.createElement('div');
+      place.className = 'col-place'; place.textContent = places[col];
+      column.appendChild(place);
+
+      // Heaven bead (1 bead, worth 5)
+      const hBead = document.createElement('div');
+      hBead.className = 'bead-btn heaven';
+      hBead.textContent = '5';
+      hBead.dataset.col = col; hBead.dataset.type = 'heaven';
+      if (heavenBeads[col]) hBead.classList.add('active');
+      hBead.addEventListener('click', () => toggleBead('heaven', col));
+      column.appendChild(hBead);
+
+      // Beam
+      const beam = document.createElement('div');
+      beam.className = 'beam';
+      column.appendChild(beam);
+
+      // Earth beads (5 beads, each worth 1)
+      for (let i = 0; i < 5; i++) {
+        const eBead = document.createElement('div');
+        eBead.className = 'bead-btn earth';
+        eBead.textContent = '1';
+        eBead.dataset.col = col; eBead.dataset.type = 'earth'; eBead.dataset.idx = i;
+        if (i < earthBeads[col]) eBead.classList.add('active');
+        eBead.addEventListener('click', () => toggleBead('earth', col, i));
+        column.appendChild(eBead);
+      }
+
+      // Current column value
+      const val = document.createElement('div');
+      val.className = 'col-current-val';
+      val.textContent = getColumnValue(col);
+      val.id = 'col-val-' + col;
+      column.appendChild(val);
+
+      container.appendChild(column);
+    }
+
+    updateTotalDisplay();
+  }
+
+  function toggleBead(type, col, idx) {
+    if (gameOver) return;
+    if (type === 'heaven') {
+      heavenBeads[col] = heavenBeads[col] ? 0 : 1;
+    } else {
+      // Earth: clicking bead at position idx
+      // If idx < current count: remove from idx up (clicking deactivates)
+      // If idx >= current count: add up to idx+1 (clicking activates)
+      if (idx < earthBeads[col]) {
+        earthBeads[col] = idx; // Deactivate from this bead upward
+      } else {
+        earthBeads[col] = idx + 1; // Activate up to this bead
+      }
+    }
+    document.querySelector('#resultDisplay').textContent = '';
+    document.querySelector('#resultDisplay').className = 'result-display';
+    renderAbacus();
+  }
+
+  function updateTotalDisplay() {
+    const total = getTotalValue();
+    document.querySelector('#currentTotal').textContent = total.toLocaleString();
+    const diff = total - targetNumber;
+    const diffEl = document.querySelector('#matchDiff');
+    if (gameOver) { diffEl.textContent = ''; return; }
+    if (diff === 0) diffEl.textContent = '✓ Match!';
+    else if (diff > 0) diffEl.textContent = `(${diff.toLocaleString()} too high)`;
+    else diffEl.textContent = `(${Math.abs(diff).toLocaleString()} too low)`;
+    diffEl.style.color = diff === 0 ? 'var(--color-jade)' : 'var(--color-text-muted)';
+  }
+
+  function submitAnswer() {
+    if (gameOver) return;
+    const total = getTotalValue();
+    const resultEl = document.querySelector('#resultDisplay');
+
+    if (total === targetNumber) {
+      const timeBonus = Math.max(0, 30 - timerSeconds) * 2;
+      score += 100 + timeBonus;
+      resultEl.textContent = `✓ Correct! ${targetNumber.toLocaleString()} (+${100 + timeBonus} points)`;
+      resultEl.className = 'result-display correct';
+      document.querySelector('#scoreDisplay').textContent = score;
+      setTimeout(nextRound, 800);
+    } else {
+      resultEl.textContent = `✗ Your abacus shows ${total.toLocaleString()}, need ${targetNumber.toLocaleString()}. Keep adjusting!`;
+      resultEl.className = 'result-display wrong';
+    }
+  }
+
+  function nextRound() {
+    currentRound++;
+    if (currentRound >= MAX_ROUNDS) { endGame(); return; }
+    document.querySelector('#roundDisplay').textContent = `${currentRound+1}/${MAX_ROUNDS}`;
+    document.querySelector('#progressFill').style.width = ((currentRound+1)/MAX_ROUNDS*100) + '%';
+    document.querySelector('#progressText').textContent = `${currentRound+1}/${MAX_ROUNDS}`;
+    document.querySelector('#resultDisplay').textContent = '';
+    document.querySelector('#resultDisplay').className = 'result-display';
+    resetBeads();
+    generateTarget();
+    renderAbacus();
+  }
+
+  function endGame() {
+    gameOver = true; stopTimer();
+    document.querySelector('#finalScore').textContent = score;
+    document.querySelector('#finalTime').textContent = formatTime(timerSeconds);
+    document.querySelector('#completeModal').classList.add('active');
+  }
+
+  function startTimer() {
+    stopTimer();
+    timerInterval = setInterval(() => {
+      if (!gameOver) { timerSeconds++; document.querySelector('#timerDisplay').textContent = formatTime(timerSeconds); }
+    }, 1000);
+  }
+  function stopTimer() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
+  function formatTime(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
+
+  function restartGame() {
+    currentRound = 0; score = 0; timerSeconds = 0; gameOver = false;
+    resetBeads();
+    document.querySelector('#scoreDisplay').textContent = '0';
+    document.querySelector('#roundDisplay').textContent = '1/15';
+    document.querySelector('#timerDisplay').textContent = '00:00';
+    document.querySelector('#progressFill').style.width = '6.7%';
+    document.querySelector('#progressText').textContent = '1/15';
+    document.querySelector('#completeModal').classList.remove('active');
+    document.querySelector('#resultDisplay').textContent = '';
+    document.querySelector('#resultDisplay').className = 'result-display';
+    generateTarget();
+    renderAbacus();
+    startTimer();
+  }
+
+  document.querySelector('#submitBtn').addEventListener('click', submitAnswer);
+  document.querySelector('#resetBtn').addEventListener('click', () => { resetBeads(); renderAbacus(); });
+  document.querySelector('#skipBtn').addEventListener('click', () => { score = Math.max(0, score - 20); document.querySelector('#scoreDisplay').textContent = score; nextRound(); });
+  document.querySelector('#restartAllBtn').addEventListener('click', restartGame);
+
+  // Init
+  generateTarget();
+  renderAbacus();
+  startTimer();
+})();
+</script>
+</body>
+</html>

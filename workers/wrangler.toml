@@ -20,4 +20,4 @@ id = "f59a716623314b4ea9f3900039929d0b"
 name = "dragontile-api-prod"
 
 [vars]
-ALLOWED_ORIGINS = "https://dragontile.games,https://www.dragontile.games"
+ALLOWED_ORIGINS = "https://zenmatchgames.com,https://www.zenmatchgames.com"

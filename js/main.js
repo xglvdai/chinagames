@@ -130,7 +130,7 @@ function initLeaderboard() {
   const tbody = document.querySelector('#leaderboardBody');
   if (!tabs.length || !tbody) return;
 
-  const API_BASE = 'https://api.dragontile.games';
+  const API_BASE = 'https://api.zenmatchgames.com';
 
   // Leaderboard data — local scores with fallback mock
   const mockData = {

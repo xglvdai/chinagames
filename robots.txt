@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /workers/
 
-Sitemap: https://dragontile.games/sitemap.xml
+Sitemap: https://zenmatchgames.com/sitemap.xml

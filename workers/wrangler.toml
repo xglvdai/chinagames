@@ -1,7 +1,7 @@
 # DragonTile Games — Cloudflare Worker API
 # Leaderboard and game data backend
 
-name = "dragontile-api"
+name = "chinagames"
 main = "src/index.js"
 compatibility_date = "2026-07-01"
 
@@ -15,9 +15,6 @@ database_id = "bb0309a7-a31d-4e3d-9902-935c9e060703"
 [[kv_namespaces]]
 binding = "KV"
 id = "f59a716623314b4ea9f3900039929d0b"
-
-[env.production]
-name = "dragontile-api-prod"
 
 [vars]
 ALLOWED_ORIGINS = "https://zenmatchgames.com,https://www.zenmatchgames.com"

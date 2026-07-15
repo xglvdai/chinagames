@@ -73,25 +73,25 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://zenmatchgames.com/about.html</loc>
+    <loc>https://zenmatchgames.com/about</loc>
     <lastmod>2026-07-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://zenmatchgames.com/privacy.html</loc>
+    <loc>https://zenmatchgames.com/privacy</loc>
     <lastmod>2026-07-15</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://zenmatchgames.com/terms.html</loc>
+    <loc>https://zenmatchgames.com/terms</loc>
     <lastmod>2026-07-15</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://zenmatchgames.com/contact.html</loc>
+    <loc>https://zenmatchgames.com/contact</loc>
     <lastmod>2026-07-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>

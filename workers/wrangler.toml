@@ -9,12 +9,12 @@ compatibility_date = "2026-07-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "dragontile-db"
-database_id = "your-database-id-here"
+database_id = "bb0309a7-a31d-4e3d-9902-935c9e060703"
 
 # KV namespace for config/sessions
 [[kv_namespaces]]
 binding = "KV"
-id = "your-kv-id-here"
+id = "f59a716623314b4ea9f3900039929d0b"
 
 [env.production]
 name = "dragontile-api-prod"

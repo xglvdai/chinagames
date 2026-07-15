@@ -152,6 +152,7 @@
         scores[gameId].sort((a, b) => (b.score || 0) - (a.score || 0));
         localStorage.setItem('zenmatch_local_scores', JSON.stringify(scores));
 
+        overlay.classList.remove('name-input-submitting');
         title.textContent = 'Score Saved Locally!';
         msg.innerHTML = '<span style="color:#f39c12;">&#9888; API not available. Score saved on this device.</span>';
         scoreDisplay.textContent = '';

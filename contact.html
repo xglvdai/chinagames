@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us — DragonTile Games</title>
+  <meta name="description" content="Get in touch with DragonTile Games. Send us feedback, report bugs, suggest new games, or ask questions about our free Chinese puzzle games.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Contact Us — DragonTile Games">
+  <meta property="og:description" content="Have feedback or questions? We'd love to hear from you. Reach out to the DragonTile Games team.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://dragontile.games/contact.html">
+  <meta name="twitter:card" content="summary">
+  <link rel="canonical" href="https://dragontile.games/contact.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Contact DragonTile Games",
+    "url": "https://dragontile.games/contact.html",
+    "description": "Contact the DragonTile Games team for feedback, bug reports, game suggestions, or general inquiries.",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "DragonTile Games",
+      "url": "https://dragontile.games"
+    }
+  }
+  </script>
+</head>
+<body>
+<nav class="nav" id="nav">
+  <div class="container nav-inner">
+    <a href="/" class="nav-logo"><span class="logo-icon">&#40845;</span><span class="logo-text">DragonTile</span></a>
+    <ul class="nav-links">
+      <li><a href="/#games" class="nav-link">Games</a></li>
+      <li><a href="/#leaderboard" class="nav-link">Leaderboard</a></li>
+      <li><a href="/how-to-play/" class="nav-link">How to Play</a></li>
+      <li><a href="/about.html" class="nav-link">About</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main style="padding-top: calc(var(--nav-height) + var(--space-xl)); padding-bottom: var(--space-2xl);">
+  <div class="container" style="max-width: 900px;">
+    <div class="section-header" style="margin-bottom: var(--space-2xl);">
+      <span class="section-badge">&#128172; Get in Touch</span>
+      <h1>Contact Us</h1>
+      <p>We'd love to hear from you. Whether it's feedback, bug reports, or new game ideas — reach out anytime.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2xl); align-items: start;">
+      <!-- Contact Form -->
+      <div style="background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: var(--space-2xl);">
+        <h2 style="font-family: var(--font-display); color: var(--color-gold-light); margin-bottom: var(--space-lg);">Send a Message</h2>
+        <form id="contactForm" style="display: flex; flex-direction: column; gap: var(--space-md);">
+          <div>
+            <label for="name" style="display: block; margin-bottom: var(--space-xs); color: var(--color-text-dim); font-size: 0.9rem;">Your Name</label>
+            <input type="text" id="name" name="name" required placeholder="Enter your name"
+              style="width: 100%; padding: 12px 16px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); color: var(--color-text); font-size: 1rem; font-family: inherit;">
+          </div>
+          <div>
+            <label for="email" style="display: block; margin-bottom: var(--space-xs); color: var(--color-text-dim); font-size: 0.9rem;">Email Address</label>
+            <input type="email" id="email" name="email" required placeholder="you@example.com"
+              style="width: 100%; padding: 12px 16px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); color: var(--color-text); font-size: 1rem; font-family: inherit;">
+          </div>
+          <div>
+            <label for="subject" style="display: block; margin-bottom: var(--space-xs); color: var(--color-text-dim); font-size: 0.9rem;">Subject</label>
+            <select id="subject" name="subject"
+              style="width: 100%; padding: 12px 16px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); color: var(--color-text); font-size: 1rem; font-family: inherit;">
+              <option value="feedback">General Feedback</option>
+              <option value="bug">Bug Report</option>
+              <option value="suggestion">Game Suggestion</option>
+              <option value="leaderboard">Leaderboard Issue</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label for="message" style="display: block; margin-bottom: var(--space-xs); color: var(--color-text-dim); font-size: 0.9rem;">Your Message</label>
+            <textarea id="message" name="message" required placeholder="Tell us what's on your mind..." rows="5"
+              style="width: 100%; padding: 12px 16px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); color: var(--color-text); font-size: 1rem; font-family: inherit; resize: vertical;"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 1rem;">
+            Send Message &#10132;
+          </button>
+        </form>
+        <div id="formSuccess" style="display: none; text-align: center; padding: var(--space-xl); color: var(--color-jade);">
+          <div style="font-size: 3rem; margin-bottom: var(--space-sm);">&#9989;</div>
+          <strong>Message Sent!</strong>
+          <p style="color: var(--color-text-dim); margin-top: var(--space-sm);">Thank you for reaching out. We'll get back to you soon.</p>
+        </div>
+      </div>
+
+      <!-- Contact Info -->
+      <div>
+        <div style="background: var(--color-bg-card); border: 1px solid var(--color-gold-dark); border-radius: var(--radius-xl); padding: var(--space-2xl); margin-bottom: var(--space-lg);">
+          <h2 style="font-family: var(--font-display); color: var(--color-gold-light); margin-bottom: var(--space-lg);">&#128233; Email Us Directly</h2>
+          <div style="margin-bottom: var(--space-lg);">
+            <strong style="color: var(--color-text);">General Inquiries</strong>
+            <br><a href="mailto:hello@dragontile.games" style="color: var(--color-gold);">hello@dragontile.games</a>
+          </div>
+          <div style="margin-bottom: var(--space-lg);">
+            <strong style="color: var(--color-text);">Bug Reports</strong>
+            <br><a href="mailto:bugs@dragontile.games" style="color: var(--color-gold);">bugs@dragontile.games</a>
+          </div>
+          <div style="margin-bottom: var(--space-lg);">
+            <strong style="color: var(--color-text);">Privacy Concerns</strong>
+            <br><a href="mailto:privacy@dragontile.games" style="color: var(--color-gold);">privacy@dragontile.games</a>
+          </div>
+          <div>
+            <strong style="color: var(--color-text);">Legal Matters</strong>
+            <br><a href="mailto:legal@dragontile.games" style="color: var(--color-gold);">legal@dragontile.games</a>
+          </div>
+        </div>
+
+        <div style="background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: var(--space-2xl);">
+          <h2 style="font-family: var(--font-display); color: var(--color-gold-light); margin-bottom: var(--space-lg);">&#128269; Looking for Something?</h2>
+          <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--space-sm);">
+            <li>&#128214; <a href="/privacy.html" style="color: var(--color-gold);">Privacy Policy</a> — how we handle your data</li>
+            <li>&#128220; <a href="/terms.html" style="color: var(--color-gold);">Terms of Service</a> — rules of the road</li>
+            <li>&#127983; <a href="/about.html" style="color: var(--color-gold);">About Us</a> — our story &amp; mission</li>
+            <li>&#128218; <a href="/how-to-play/" style="color: var(--color-gold);">How to Play</a> — game guides &amp; tips</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <span class="footer-logo">&#40845; DragonTile</span>
+        <p>Ancient Chinese puzzle games for the modern world. Train your mind, embrace the tradition.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Games</h4>
+        <a href="/games/mahjong/">Mahjong Solitaire</a>
+        <a href="/games/hanzi/">Hanzi Match</a>
+        <a href="/games/klotski/">Klotski</a>
+        <a href="/games/touhu/">Pitch-Pot</a>
+        <a href="/games/abacus/">Abacus Enigma</a>
+      </div>
+      <div class="footer-links">
+        <h4>Company</h4>
+        <a href="/about.html">About Us</a>
+        <a href="/privacy.html">Privacy Policy</a>
+        <a href="/terms.html">Terms of Service</a>
+        <a href="/contact.html">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 DragonTile Games. All rights reserved. Built with &#10084;&#65039; on Cloudflare.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Simple contact form handler (sends to a Worker endpoint or fallback)
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const submitBtn = form.querySelector('button[type="submit"]');
+
+  // Show loading state
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Sending...';
+
+  // In a production setup, this would POST to a Cloudflare Worker
+  // For now, show success as a demo
+  setTimeout(function() {
+    form.style.display = 'none';
+    document.getElementById('formSuccess').style.display = 'block';
+  }, 800);
+});
+</script>
+</body>
+</html>

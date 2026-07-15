@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initFloatingTiles();
   initScrollAnimations();
   initLeaderboard();
-  initNewsletterForm();
   initMobileMenu();
   initPlayNowModal();
   initDropdownMenus();
@@ -180,29 +179,6 @@ function initLeaderboard() {
 
   // Initial render
   renderLeaderboard('mahjong');
-}
-
-// ===== Newsletter Form =====
-function initNewsletterForm() {
-  const form = document.querySelector('#newsletterForm');
-  if (!form) return;
-
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const email = form.querySelector('input').value;
-    if (email) {
-      // TODO: Connect to Mailchimp/ConvertKit API
-      const btn = form.querySelector('button');
-      const originalText = btn.textContent;
-      btn.textContent = 'Subscribed! ✓';
-      btn.style.background = 'var(--color-jade-dark)';
-      form.querySelector('input').value = '';
-      setTimeout(() => {
-        btn.textContent = originalText;
-        btn.style.background = '';
-      }, 3000);
-    }
-  });
 }
 
 // ===== Play Now Modal =====

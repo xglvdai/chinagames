@@ -129,6 +129,7 @@
       <div class="game-actions">
         <button class="btn btn-secondary btn-sm" id="resetBtn">↺ Reset</button>
         <button class="btn btn-secondary btn-sm" id="skipBtn">⏭ Skip</button>
+        <button class="btn btn-gold btn-sm" id="lbSubmitBtn" title="Submit your current score to the leaderboard">🏆 Submit Score</button>
       </div>
     </div>
   </div>
@@ -371,6 +372,11 @@
   document.querySelector('#resetBtn').addEventListener('click', () => { resetBeads(); renderAbacus(); });
   document.querySelector('#skipBtn').addEventListener('click', () => { score = Math.max(0, score - 20); document.querySelector('#scoreDisplay').textContent = score; nextRound(); });
   document.querySelector('#restartAllBtn').addEventListener('click', restartGame);
+  document.querySelector('#lbSubmitBtn').addEventListener('click', () => {
+    showNameInput('abacus', 'Round: ' + (currentRound+1) + ' | Score: ' + score + ' | Time: ' + formatTime(timerSeconds), function() {
+      return { score: score, time_seconds: timerSeconds };
+    });
+  });
 
   // Init
   generateTarget();

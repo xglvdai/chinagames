@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Hanzi Match — 150 Chinese Characters | ZenMatch Games</title>
-  <meta name="description" content="Build 150 Chinese characters from radicals! Pick a left and right component, then submit to check. Learn Hanzi through play.">
+  <title>Hanzi Match — 250 Chinese Characters | ZenMatch Games</title>
+  <meta name="description" content="Build 250 Chinese characters from radicals! 4 difficulty tiers with multi-character challenges. Pick a target, then combine components. Learn Hanzi through play.">
   <link rel="canonical" href="https://zenmatchgames.com/games/hanzi/">
   <link rel="stylesheet" href="/css/style.css">
   <style>
@@ -25,6 +25,17 @@
     .target-char { font-size: 7rem; color: var(--color-gold-light); font-family: var(--font-display); text-shadow: 0 0 30px rgba(201,168,76,0.3); line-height: 1; }
     .target-meaning { color: var(--color-jade); font-size: 0.9rem; margin-top: 0.25rem; font-weight: 600; }
     .target-label { color: var(--color-text-dim); font-size: 0.85rem; margin-top: var(--space-xs); }
+
+    /* Multi-target selection */
+    .multi-target-area { display: none; text-align: center; margin-bottom: var(--space-md); }
+    .multi-target-area.active { display: block; }
+    .multi-target-label { color: var(--color-gold-light); font-size: 0.85rem; font-weight: 700; margin-bottom: var(--space-sm); text-transform: uppercase; letter-spacing: 0.1em; }
+    .multi-target-grid { display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap; }
+    .multi-target-card { width: 80px; height: 100px; background: var(--color-bg-card); border: 2px solid var(--color-border); border-radius: var(--radius-lg); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all var(--transition-fast); user-select: none; -webkit-tap-highlight-color: transparent; }
+    .multi-target-card:hover { border-color: var(--color-gold); transform: translateY(-3px); box-shadow: 0 4px 12px rgba(201,168,76,0.2); }
+    .multi-target-card .mt-char { font-size: 2.5rem; font-family: var(--font-display); line-height: 1; }
+    .multi-target-card .mt-hint { font-size: 0.65rem; color: var(--color-text-muted); margin-top: 4px; }
+    .multi-target-card.selected-target { border-color: var(--color-gold); background: rgba(201,168,76,0.12); box-shadow: 0 0 0 3px rgba(201,168,76,0.4); transform: scale(1.08); }
 
     .selection-row { display: flex; gap: var(--space-2xl); align-items: center; flex-wrap: wrap; justify-content: center; }
     .selection-col { display: flex; flex-direction: column; align-items: center; gap: var(--space-sm); }
@@ -54,6 +65,8 @@
       .selection-row { gap: var(--space-md); }
       .merge-arrow { font-size: 2rem; }
       .preview-slot { width: 60px; height: 60px; font-size: 2rem; }
+      .multi-target-card { width: 65px; height: 85px; }
+      .multi-target-card .mt-char { font-size: 2rem; }
     }
   </style>
 </head>
@@ -88,20 +101,26 @@
       </div>
       <div class="game-stats-bar">
         <div class="game-stat-item"><div class="game-stat-value" id="scoreDisplay">0</div><div class="game-stat-label">Score</div></div>
-        <div class="game-stat-item"><div class="game-stat-value" id="levelDisplay">1/150</div><div class="game-stat-label">Progress</div></div>
+        <div class="game-stat-item"><div class="game-stat-value" id="levelDisplay">1/250</div><div class="game-stat-label">Progress</div></div>
         <div class="game-stat-item"><div class="game-stat-value" id="streakDisplay">0</div><div class="game-stat-label">Streak</div></div>
       </div>
       <div class="game-actions">
         <button class="btn btn-secondary btn-sm" id="hintBtn">💡 Hint</button>
         <button class="btn btn-secondary btn-sm" id="skipBtn">⏭ Skip</button>
+        <button class="btn btn-gold btn-sm" id="lbSubmitBtn" title="Submit your current score to the leaderboard">🏆 Submit Score</button>
       </div>
     </div>
   </div>
 
   <div class="container game-board-wrap">
     <div class="level-progress">
-      <span style="font-size:0.8rem;color:var(--color-text-dim);">Level <span id="curLvl">1</span>/150</span>
-      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0.67%"></div></div>
+      <span style="font-size:0.8rem;color:var(--color-text-dim);">Level <span id="curLvl">1</span>/250</span>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0.4%"></div></div>
+    </div>
+
+    <div class="multi-target-area" id="multiTargetArea">
+      <div class="multi-target-label">Pick a character to build:</div>
+      <div class="multi-target-grid" id="multiTargetGrid"></div>
     </div>
 
     <div class="target-area">
@@ -136,8 +155,8 @@
     <div class="check-result" id="checkResult"></div>
 
     <p style="color:var(--color-text-dim);font-size:0.83rem;text-align:center;max-width:500px;line-height:1.7;">
-      <strong>Step 1:</strong> Pick a radical from the <strong>Left</strong> column.
-      <strong>Step 2:</strong> Pick a radical from the <strong>Right</strong> column.
+      <strong>Step 1:</strong> For higher tiers, pick a <strong>target character</strong> above.
+      <strong>Step 2:</strong> Pick a radical from <strong>Left</strong> and <strong>Right</strong> columns.
       <strong>Step 3:</strong> Click <strong>Submit</strong> to check!
     </p>
   </div>
@@ -158,40 +177,70 @@
 
 <script>
 (function() {
-  // 150 characters: each has left + right components
-  const PUZZLES = [
-    // Tier 1 (1-30): basic 2-component
-    { char:'林', left:'木', right:'木', meaning:'forest', hint:'Two trees' },
-    { char:'休', left:'亻', right:'木', meaning:'rest', hint:'Person + tree' },
+  // ========== Expanded Character Database: 250 unique characters across 4 tiers ==========
+
+  const PUZZLES_ALL = [
+    //== TIER 1 (0-69): Basic 2-component, common radicals, single target ==
+    { char:'休', left:'亻', right:'木', meaning:'rest', hint:'Person by tree' },
     { char:'好', left:'女', right:'子', meaning:'good', hint:'Woman + child' },
     { char:'明', left:'日', right:'月', meaning:'bright', hint:'Sun + moon' },
     { char:'从', left:'人', right:'人', meaning:'follow', hint:'Two people' },
-    { char:'信', left:'亻', right:'言', meaning:'trust', hint:'Person + words' },
+    { char:'信', left:'亻', right:'言', meaning:'trust', hint:'Person + speech' },
     { char:'仙', left:'亻', right:'山', meaning:'immortal', hint:'Person + mountain' },
     { char:'他', left:'亻', right:'也', meaning:'he', hint:'Person + also' },
     { char:'付', left:'亻', right:'寸', meaning:'pay', hint:'Person + inch' },
-    { char:'们', left:'亻', right:'门', meaning:'plural', hint:'Person + door' },
+    { char:'们', left:'亻', right:'门', meaning:'plural', hint:'Person + gate' },
     { char:'体', left:'亻', right:'本', meaning:'body', hint:'Person + root' },
     { char:'位', left:'亻', right:'立', meaning:'position', hint:'Person + stand' },
     { char:'什', left:'亻', right:'十', meaning:'what', hint:'Person + ten' },
-    { char:'仁', left:'亻', right:'二', meaning:'benevolence', hint:'Person + two' },
-    { char:'加', left:'力', right:'口', meaning:'add', hint:'Strength + mouth' },
-    { char:'功', left:'工', right:'力', meaning:'merit', hint:'Work + strength' },
+    { char:'仁', left:'亻', right:'二', meaning:'kindness', hint:'Person + two' },
+    { char:'仗', left:'亻', right:'丈', meaning:'rely on', hint:'Person + measure' },
+    { char:'代', left:'亻', right:'弋', meaning:'generation', hint:'Person + arrow' },
+    { char:'件', left:'亻', right:'牛', meaning:'item', hint:'Person + cow' },
+    { char:'价', left:'亻', right:'介', meaning:'price', hint:'Person + between' },
+    { char:'仿', left:'亻', right:'方', meaning:'imitate', hint:'Person + square' },
+    { char:'伏', left:'亻', right:'犬', meaning:'crouch', hint:'Person + dog' },
+    { char:'伍', left:'亻', right:'五', meaning:'squad', hint:'Person + five' },
+    { char:'优', left:'亻', right:'尤', meaning:'excellent', hint:'Person + special' },
+    { char:'仲', left:'亻', right:'中', meaning:'middle', hint:'Person + center' },
+    { char:'估', left:'亻', right:'古', meaning:'estimate', hint:'Person + ancient' },
+    { char:'何', left:'亻', right:'可', meaning:'what/why', hint:'Person + able' },
+    { char:'但', left:'亻', right:'旦', meaning:'but', hint:'Person + dawn' },
+    { char:'作', left:'亻', right:'乍', meaning:'make', hint:'Person + sudden' },
+    { char:'低', left:'亻', right:'氐', meaning:'low', hint:'Person + base' },
+    { char:'住', left:'亻', right:'主', meaning:'live', hint:'Person + host' },
+    { char:'例', left:'亻', right:'列', meaning:'example', hint:'Person + line up' },
+    { char:'供', left:'亻', right:'共', meaning:'provide', hint:'Person + share' },
+    { char:'依', left:'亻', right:'衣', meaning:'depend on', hint:'Person + clothes' },
+    { char:'侍', left:'亻', right:'寺', meaning:'serve', hint:'Person + temple' },
+    { char:'佳', left:'亻', right:'圭', meaning:'excellent', hint:'Person + jade' },
+    { char:'使', left:'亻', right:'吏', meaning:'use/cause', hint:'Person + officer' },
+    { char:'加', left:'力', right:'口', meaning:'add', hint:'Power + mouth' },
+    { char:'功', left:'工', right:'力', meaning:'merit', hint:'Work + power' },
     { char:'李', left:'木', right:'子', meaning:'plum', hint:'Tree + child' },
     { char:'材', left:'木', right:'才', meaning:'material', hint:'Tree + talent' },
     { char:'村', left:'木', right:'寸', meaning:'village', hint:'Tree + inch' },
     { char:'松', left:'木', right:'公', meaning:'pine', hint:'Tree + public' },
     { char:'柏', left:'木', right:'白', meaning:'cypress', hint:'Tree + white' },
-    { char:'柳', left:'木', right:'卯', meaning:'willow', hint:'Tree + mortise' },
-    { char:'桃', left:'木', right:'兆', meaning:'peach', hint:'Tree + omen' },
-    { char:'梅', left:'木', right:'每', meaning:'plum', hint:'Tree + every' },
-    { char:'林', left:'木', right:'木', meaning:'grove', hint:'Two trees' },
-    { char:'杜', left:'木', right:'土', meaning:'birch', hint:'Tree + earth' },
+    { char:'杜', left:'木', right:'土', meaning:'pear tree', hint:'Tree + earth' },
     { char:'杆', left:'木', right:'干', meaning:'pole', hint:'Tree + dry' },
     { char:'机', left:'木', right:'几', meaning:'machine', hint:'Tree + table' },
+    { char:'枝', left:'木', right:'支', meaning:'branch', hint:'Tree + support' },
+    { char:'柱', left:'木', right:'主', meaning:'pillar', hint:'Tree + host' },
+    { char:'根', left:'木', right:'艮', meaning:'root', hint:'Tree + tough' },
+    { char:'格', left:'木', right:'各', meaning:'pattern', hint:'Tree + each' },
+    { char:'桥', left:'木', right:'乔', meaning:'bridge', hint:'Tree + tall' },
+    { char:'桶', left:'木', right:'甬', meaning:'bucket', hint:'Tree + passage' },
+    { char:'桃', left:'木', right:'兆', meaning:'peach', hint:'Tree + omen' },
+    { char:'梅', left:'木', right:'每', meaning:'plum', hint:'Tree + every' },
+    { char:'杨', left:'木', right:'昜', meaning:'poplar', hint:'Tree + bright' },
+    { char:'柳', left:'木', right:'卯', meaning:'willow', hint:'Tree + mortise' },
+    { char:'棋', left:'木', right:'其', meaning:'chess', hint:'Tree + that' },
+    { char:'模', left:'木', right:'莫', meaning:'model', hint:'Tree + none' },
+    { char:'样', left:'木', right:'羊', meaning:'shape', hint:'Tree + sheep' },
+    { char:'林', left:'木', right:'木', meaning:'forest', hint:'Two trees' },
     { char:'打', left:'扌', right:'丁', meaning:'hit', hint:'Hand + nail' },
-    { char:'找', left:'扌', right:'戈', meaning:'find', hint:'Hand + spear' },
-    // Tier 2 (31-60)
+    { char:'找', left:'扌', right:'戈', meaning:'search', hint:'Hand + spear' },
     { char:'把', left:'扌', right:'巴', meaning:'hold', hint:'Hand + cling' },
     { char:'拉', left:'扌', right:'立', meaning:'pull', hint:'Hand + stand' },
     { char:'拍', left:'扌', right:'白', meaning:'clap', hint:'Hand + white' },
@@ -200,184 +249,369 @@
     { char:'按', left:'扌', right:'安', meaning:'press', hint:'Hand + peace' },
     { char:'提', left:'扌', right:'是', meaning:'lift', hint:'Hand + is' },
     { char:'推', left:'扌', right:'隹', meaning:'push', hint:'Hand + bird' },
-    { char:'河', left:'氵', right:'可', meaning:'river', hint:'Water + can' },
+    { char:'扶', left:'扌', right:'夫', meaning:'support', hint:'Hand + husband' },
+    { char:'抓', left:'扌', right:'爪', meaning:'grab', hint:'Hand + claw' },
+
+    //== TIER 2 (70-139): More radicals, larger pool, single target ==
+    { char:'河', left:'氵', right:'可', meaning:'river', hint:'Water + able' },
     { char:'江', left:'氵', right:'工', meaning:'big river', hint:'Water + work' },
-    { char:'湖', left:'氵', right:'胡', meaning:'lake', hint:'Water + why' },
+    { char:'湖', left:'氵', right:'胡', meaning:'lake', hint:'Water + foreign' },
     { char:'海', left:'氵', right:'每', meaning:'sea', hint:'Water + every' },
     { char:'洗', left:'氵', right:'先', meaning:'wash', hint:'Water + first' },
-    { char:'活', left:'氵', right:'舌', meaning:'live', hint:'Water + tongue' },
+    { char:'活', left:'氵', right:'舌', meaning:'alive', hint:'Water + tongue' },
     { char:'清', left:'氵', right:'青', meaning:'clear', hint:'Water + green' },
-    { char:'深', left:'氵', right:'罙', meaning:'deep', hint:'Water + explore' },
+    { char:'汉', left:'氵', right:'又', meaning:'Chinese', hint:'Water + again' },
+    { char:'池', left:'氵', right:'也', meaning:'pond', hint:'Water + also' },
+    { char:'汪', left:'氵', right:'王', meaning:'vast water', hint:'Water + king' },
+    { char:'沐', left:'氵', right:'木', meaning:'bathe', hint:'Water + tree' },
+    { char:'沙', left:'氵', right:'少', meaning:'sand', hint:'Water + few' },
+    { char:'法', left:'氵', right:'去', meaning:'law/method', hint:'Water + go' },
+    { char:'波', left:'氵', right:'皮', meaning:'wave', hint:'Water + skin' },
+    { char:'注', left:'氵', right:'主', meaning:'pour/note', hint:'Water + host' },
+    { char:'洋', left:'氵', right:'羊', meaning:'ocean', hint:'Water + sheep' },
+    { char:'洪', left:'氵', right:'共', meaning:'flood', hint:'Water + shared' },
+    { char:'洲', left:'氵', right:'州', meaning:'continent', hint:'Water + state' },
+    { char:'洞', left:'氵', right:'同', meaning:'cave', hint:'Water + same' },
+    { char:'流', left:'氵', right:'充', meaning:'flow', hint:'Water + fill' },
+    { char:'浮', left:'氵', right:'孚', meaning:'float', hint:'Water + trust' },
+    { char:'浴', left:'氵', right:'谷', meaning:'bathe', hint:'Water + valley' },
+    { char:'浪', left:'氵', right:'良', meaning:'wave/tide', hint:'Water + good' },
+    { char:'深', left:'氵', right:'罙', meaning:'deep', hint:'Water + cave' },
+    { char:'浸', left:'氵', right:'侵', meaning:'soak', hint:'Water + invade' },
+    { char:'涌', left:'氵', right:'甬', meaning:'gush', hint:'Water + passage' },
     { char:'灯', left:'火', right:'丁', meaning:'lamp', hint:'Fire + nail' },
+    { char:'灿', left:'火', right:'山', meaning:'brilliant', hint:'Fire + mountain' },
+    { char:'炉', left:'火', right:'户', meaning:'stove', hint:'Fire + door' },
+    { char:'炮', left:'火', right:'包', meaning:'cannon', hint:'Fire + wrap' },
+    { char:'烧', left:'火', right:'尧', meaning:'burn', hint:'Fire + legendary' },
+    { char:'烟', left:'火', right:'因', meaning:'smoke', hint:'Fire + cause' },
+    { char:'烦', left:'火', right:'页', meaning:'annoyed', hint:'Fire + page' },
     { char:'唱', left:'口', right:'昌', meaning:'sing', hint:'Mouth + prosper' },
     { char:'吃', left:'口', right:'乞', meaning:'eat', hint:'Mouth + beg' },
     { char:'叫', left:'口', right:'丩', meaning:'call', hint:'Mouth + entangle' },
-    { char:'吹', left:'口', right:'欠', meaning:'blow', hint:'Mouth + owe' },
+    { char:'吹', left:'口', right:'欠', meaning:'blow', hint:'Mouth + yawn' },
     { char:'叹', left:'口', right:'又', meaning:'sigh', hint:'Mouth + again' },
     { char:'听', left:'口', right:'斤', meaning:'listen', hint:'Mouth + axe' },
-    { char:'喝', left:'口', right:'曷', meaning:'drink', hint:'Mouth + what' },
+    { char:'叶', left:'口', right:'十', meaning:'leaf', hint:'Mouth + ten' },
+    { char:'吵', left:'口', right:'少', meaning:'noisy', hint:'Mouth + few' },
+    { char:'吸', left:'口', right:'及', meaning:'inhale', hint:'Mouth + reach' },
+    { char:'吟', left:'口', right:'今', meaning:'chant', hint:'Mouth + now' },
+    { char:'吻', left:'口', right:'勿', meaning:'kiss', hint:'Mouth + not' },
+    { char:'味', left:'口', right:'未', meaning:'taste', hint:'Mouth + not yet' },
+    { char:'咳', left:'口', right:'亥', meaning:'cough', hint:'Mouth + boar' },
+    { char:'哨', left:'口', right:'肖', meaning:'whistle', hint:'Mouth + alike' },
+    { char:'唤', left:'口', right:'奂', meaning:'summon', hint:'Mouth + brilliant' },
+    { char:'啊', left:'口', right:'阿', meaning:'ah!', hint:'Mouth + prefix' },
+    { char:'啤', left:'口', right:'卑', meaning:'beer', hint:'Mouth + low' },
+    { char:'喝', left:'口', right:'曷', meaning:'drink', hint:'Mouth + question' },
+    { char:'嘛', left:'口', right:'麻', meaning:'modal part.', hint:'Mouth + hemp' },
+    { char:'吓', left:'口', right:'下', meaning:'scare', hint:'Mouth + down' },
     { char:'都', left:'者', right:'阝', meaning:'all/capital', hint:'Person + city' },
     { char:'教', left:'孝', right:'攵', meaning:'teach', hint:'Filial + action' },
-    { char:'数', left:'娄', right:'攵', meaning:'number', hint:'Repeat + action' },
     { char:'雪', left:'雨', right:'彐', meaning:'snow', hint:'Rain + hand' },
     { char:'雷', left:'雨', right:'田', meaning:'thunder', hint:'Rain + field' },
     { char:'雾', left:'雨', right:'务', meaning:'fog', hint:'Rain + task' },
-    // Tier 3 (61-90)
     { char:'露', left:'雨', right:'路', meaning:'dew', hint:'Rain + road' },
     { char:'霜', left:'雨', right:'相', meaning:'frost', hint:'Rain + mutual' },
     { char:'霞', left:'雨', right:'叚', meaning:'rosy clouds', hint:'Rain + distant' },
-    { char:'男', left:'田', right:'力', meaning:'male', hint:'Field + strength' },
-    { char:'苗', left:'艹', right:'田', meaning:'sprout', hint:'Grass + field' },
+    { char:'男', left:'田', right:'力', meaning:'male', hint:'Field + power' },
+    { char:'苗', left:'艹', right:'田', meaning:'seedling', hint:'Grass + field' },
     { char:'花', left:'艹', right:'化', meaning:'flower', hint:'Grass + change' },
     { char:'草', left:'艹', right:'早', meaning:'grass', hint:'Grass + early' },
     { char:'英', left:'艹', right:'央', meaning:'hero', hint:'Grass + center' },
     { char:'苦', left:'艹', right:'古', meaning:'bitter', hint:'Grass + ancient' },
-    { char:'药', left:'艹', right:'约', meaning:'medicine', hint:'Grass + about' },
+    { char:'苏', left:'艹', right:'办', meaning:'revive', hint:'Grass + manage' },
+
+    //== TIER 3 (140-199): Multi-target (2-3 choices), harder radicals ==
+    { char:'拿', left:'合', right:'手', meaning:'take/grab', hint:'Combine + hand' },
+    { char:'药', left:'艹', right:'约', meaning:'medicine', hint:'Grass + promise' },
     { char:'泉', left:'白', right:'水', meaning:'spring', hint:'White + water' },
     { char:'看', left:'手', right:'目', meaning:'look', hint:'Hand + eye' },
     { char:'思', left:'田', right:'心', meaning:'think', hint:'Field + heart' },
     { char:'忘', left:'亡', right:'心', meaning:'forget', hint:'Perish + heart' },
     { char:'忍', left:'刃', right:'心', meaning:'endure', hint:'Blade + heart' },
-    { char:'志', left:'士', right:'心', meaning:'will', hint:'Scholar + heart' },
+    { char:'志', left:'士', right:'心', meaning:'will/ambition', hint:'Scholar + heart' },
     { char:'忠', left:'中', right:'心', meaning:'loyal', hint:'Center + heart' },
-    { char:'拿', left:'合', right:'手', meaning:'take', hint:'Close + hand' },
-    { char:'石', left:'厂', right:'口', meaning:'stone', hint:'Cliff + mouth' },
-    { char:'灭', left:'一', right:'火', meaning:'extinguish', hint:'One + fire' },
-    { char:'吕', left:'口', right:'口', meaning:'surname', hint:'Two mouths' },
-    { char:'昌', left:'日', right:'日', meaning:'prosperous', hint:'Two suns' },
-    { char:'早', left:'日', right:'十', meaning:'morning', hint:'Sun + ten' },
-    { char:'问', left:'门', right:'口', meaning:'ask', hint:'Door + mouth' },
-    { char:'间', left:'门', right:'日', meaning:'between', hint:'Door + sun' },
-    { char:'闲', left:'门', right:'木', meaning:'idle', hint:'Door + tree' },
-    { char:'闪', left:'门', right:'人', meaning:'flash', hint:'Door + person' },
-    { char:'困', left:'囗', right:'木', meaning:'trapped', hint:'Border + tree' },
-    { char:'回', left:'囗', right:'口', meaning:'return', hint:'Border + mouth' },
-    { char:'囚', left:'囗', right:'人', meaning:'prisoner', hint:'Border + person' },
-    // Tier 4 (91-120)
-    { char:'国', left:'囗', right:'玉', meaning:'country', hint:'Border + jade' },
+    { char:'忽', left:'勿', right:'心', meaning:'suddenly', hint:'Not + heart' },
+    { char:'念', left:'今', right:'心', meaning:'miss/read', hint:'Now + heart' },
+    { char:'怨', left:'夗', right:'心', meaning:'resent', hint:'Turning + heart' },
+    { char:'急', left:'刍', right:'心', meaning:'urgent', hint:'Rough + heart' },
+    { char:'怒', left:'奴', right:'心', meaning:'angry', hint:'Slave + heart' },
+    { char:'恐', left:'巩', right:'心', meaning:'fear', hint:'Firm + heart' },
+    { char:'恶', left:'亚', right:'心', meaning:'evil', hint:'Second + heart' },
+    { char:'恩', left:'因', right:'心', meaning:'grace', hint:'Cause + heart' },
+    { char:'惠', left:'叀', right:'心', meaning:'favor', hint:'Spindle + heart' },
+    { char:'您', left:'你', right:'心', meaning:'you(formal)', hint:'You + heart' },
+    { char:'悬', left:'县', right:'心', meaning:'suspend', hint:'County + heart' },
+    { char:'悲', left:'非', right:'心', meaning:'sad', hint:'Not + heart' },
+    { char:'惩', left:'征', right:'心', meaning:'punish', hint:'March + heart' },
+    { char:'惑', left:'或', right:'心', meaning:'confused', hint:'Maybe + heart' },
+    { char:'愿', left:'原', right:'心', meaning:'wish', hint:'Original + heart' },
+    { char:'国', left:'囗', right:'玉', meaning:'country', hint:'Enclosure + jade' },
+    { char:'圆', left:'囗', right:'员', meaning:'circle', hint:'Enclosure + member' },
+    { char:'围', left:'囗', right:'韦', meaning:'surround', hint:'Enclosure + leather' },
+    { char:'团', left:'囗', right:'才', meaning:'group', hint:'Enclosure + talent' },
+    { char:'圈', left:'囗', right:'卷', meaning:'ring/circle', hint:'Enclosure + scroll' },
+    { char:'图', left:'囗', right:'冬', meaning:'picture', hint:'Enclosure + winter' },
     { char:'灾', left:'宀', right:'火', meaning:'disaster', hint:'Roof + fire' },
     { char:'安', left:'宀', right:'女', meaning:'peace', hint:'Roof + woman' },
-    { char:'家', left:'宀', right:'豕', meaning:'home', hint:'Roof + pig' },
-    { char:'想', left:'相', right:'心', meaning:'think/want', hint:'Appearance + heart' },
-    { char:'意', left:'音', right:'心', meaning:'meaning', hint:'Sound + heart' },
-    { char:'息', left:'自', right:'心', meaning:'breath', hint:'Self + heart' },
-    { char:'灰', left:'厂', right:'火', meaning:'ash', hint:'Cliff + fire' },
-    { char:'灵', left:'彐', right:'火', meaning:'spirit', hint:'Hand + fire' },
-    { char:'炎', left:'火', right:'火', meaning:'inflammation', hint:'Fire + fire' },
-    { char:'热', left:'执', right:'灬', meaning:'hot', hint:'Hold + fire' },
-    { char:'照', left:'昭', right:'灬', meaning:'shine', hint:'Bright + fire' },
-    { char:'然', left:'肰', right:'灬', meaning:'thus', hint:'Meat + fire' },
-    { char:'黑', left:'里', right:'灬', meaning:'black', hint:'Inside + fire' },
-    { char:'谢', left:'言', right:'射', meaning:'thanks', hint:'Words + shoot' },
-    { char:'街', left:'彳', right:'圭', meaning:'street', hint:'Go + double earth' },
+    { char:'守', left:'宀', right:'寸', meaning:'guard', hint:'Roof + inch' },
+    { char:'宅', left:'宀', right:'乇', meaning:'residence', hint:'Roof + relying' },
+    { char:'宇', left:'宀', right:'于', meaning:'universe', hint:'Roof + at' },
+    { char:'完', left:'宀', right:'元', meaning:'complete', hint:'Roof + origin' },
+    { char:'宝', left:'宀', right:'玉', meaning:'treasure', hint:'Roof + jade' },
+    { char:'宗', left:'宀', right:'示', meaning:'ancestor', hint:'Roof + altar' },
+    { char:'定', left:'宀', right:'正', meaning:'decide/fix', hint:'Roof + correct' },
+    { char:'官', left:'宀', right:'𠂤', meaning:'official', hint:'Roof + mound' },
+    { char:'室', left:'宀', right:'至', meaning:'room', hint:'Roof + arrive' },
+    { char:'宫', left:'宀', right:'吕', meaning:'palace', hint:'Roof + spine' },
+    { char:'客', left:'宀', right:'各', meaning:'guest', hint:'Roof + each' },
+    { char:'容', left:'宀', right:'谷', meaning:'contain', hint:'Roof + valley' },
+    { char:'密', left:'宀', right:'必', meaning:'secret/dense', hint:'Roof + must' },
+    { char:'贫', left:'分', right:'贝', meaning:'poor', hint:'Split + shell' },
+    { char:'货', left:'化', right:'贝', meaning:'goods', hint:'Change + shell' },
+    { char:'资', left:'次', right:'贝', meaning:'resource', hint:'Order + shell' },
     { char:'梦', left:'林', right:'夕', meaning:'dream', hint:'Forest + evening' },
-    { char:'解', left:'角', right:'解', meaning:'untie', hint:'Horn + knife-ox' },
-    { char:'森', left:'木', right:'林', meaning:'forest', hint:'Tree + grove' },
-    { char:'品', left:'口', right:'吅', meaning:'product', hint:'Mouth + two mouths' },
+    { char:'森', left:'木', right:'林', meaning:'thick forest', hint:'Tree + grove' },
     { char:'晶', left:'日', right:'昌', meaning:'crystal', hint:'Sun + prosper' },
     { char:'众', left:'人', right:'从', meaning:'crowd', hint:'Person + follow' },
-    { char:'鑫', left:'金', right:'金', meaning:'prosperous', hint:'Gold + gold' },
-    { char:'爱', left:'爫', right:'友', meaning:'love', hint:'Claw + friend' },
-    { char:'赢', left:'吂', right:'凡', meaning:'win', hint:'Top + ordinary' },
-    { char:'音', left:'立', right:'日', meaning:'sound', hint:'Stand + sun' },
-    { char:'章', left:'立', right:'早', meaning:'chapter', hint:'Stand + early' },
-    { char:'卡', left:'上', right:'下', meaning:'block/card', hint:'Up + down' },
     { char:'尘', left:'小', right:'土', meaning:'dust', hint:'Small + earth' },
     { char:'尖', left:'小', right:'大', meaning:'sharp', hint:'Small + big' },
-    // Tier 5 (121-150)
-    { char:'忍', left:'刃', right:'心', meaning:'endure', hint:'Blade + heart' },
-    { char:'风', left:'几', right:'乂', meaning:'wind', hint:'Table + cross' },
-    { char:'云', left:'二', right:'厶', meaning:'cloud', hint:'Two + private' },
-    { char:'天', left:'一', right:'大', meaning:'sky/heaven', hint:'One + big' },
-    { char:'本', left:'木', right:'一', meaning:'root', hint:'Tree + line' },
-    { char:'末', left:'木', right:'一', meaning:'tip', hint:'Tree + short line' },
-    { char:'果', left:'田', right:'木', meaning:'fruit', hint:'Field + tree' },
-    { char:'束', left:'木', right:'口', meaning:'bundle', hint:'Tree + mouth' },
-    { char:'杏', left:'木', right:'口', meaning:'apricot', hint:'Tree + mouth' },
-    { char:'呆', left:'口', right:'木', meaning:'dull', hint:'Mouth + tree' },
-    { char:'炎', left:'火', right:'火', meaning:'blaze', hint:'Two fires' },
-    { char:'苗', left:'艹', right:'田', meaning:'sprout', hint:'Grass + field' },
-    { char:'花', left:'艹', right:'化', meaning:'flower', hint:'Grass + change' },
-    { char:'李', left:'木', right:'子', meaning:'plum', hint:'Tree + child' },
-    { char:'松', left:'木', right:'公', meaning:'pine', hint:'Tree + public' },
-    { char:'林', left:'木', right:'木', meaning:'woods', hint:'Two trees' },
-    { char:'村', left:'木', right:'寸', meaning:'village', hint:'Tree + inch' },
-    { char:'柏', left:'木', right:'白', meaning:'cypress', hint:'Tree + white' },
-    { char:'明', left:'日', right:'月', meaning:'bright', hint:'Sun + moon' },
-    { char:'江', left:'氵', right:'工', meaning:'river', hint:'Water + work' },
-    { char:'河', left:'氵', right:'可', meaning:'river', hint:'Water + can' },
-    { char:'海', left:'氵', right:'每', meaning:'sea', hint:'Water + every' },
-    { char:'清', left:'氵', right:'青', meaning:'clear', hint:'Water + green' },
-    { char:'洗', left:'氵', right:'先', meaning:'wash', hint:'Water + first' },
-    { char:'灯', left:'火', right:'丁', meaning:'lamp', hint:'Fire + nail' },
-    { char:'唱', left:'口', right:'昌', meaning:'sing', hint:'Mouth + prosper' },
-    { char:'吃', left:'口', right:'乞', meaning:'eat', hint:'Mouth + beg' },
-    { char:'男', left:'田', right:'力', meaning:'male', hint:'Field + strength' },
-    { char:'雷', left:'雨', right:'田', meaning:'thunder', hint:'Rain + field' },
-    { char:'雪', left:'雨', right:'彐', meaning:'snow', hint:'Rain + hand' },
+    { char:'灭', left:'一', right:'火', meaning:'extinguish', hint:'One + fire' },
+    { char:'问', left:'门', right:'口', meaning:'ask', hint:'Gate + mouth' },
+    { char:'间', left:'门', right:'日', meaning:'between', hint:'Gate + sun' },
+    { char:'闲', left:'门', right:'木', meaning:'idle', hint:'Gate + tree' },
+    { char:'闪', left:'门', right:'人', meaning:'flash', hint:'Gate + person' },
+    { char:'闭', left:'门', right:'才', meaning:'close', hint:'Gate + talent' },
+
+    //== TIER 4 (200-249): Expert, 3-4 character choices, large radical pool ==
+    { char:'想', left:'相', right:'心', meaning:'think/want', hint:'Mutual + heart' },
+    { char:'意', left:'音', right:'心', meaning:'meaning/wish', hint:'Sound + heart' },
+    { char:'息', left:'自', right:'心', meaning:'breath/rest', hint:'Self + heart' },
+    { char:'灰', left:'厂', right:'火', meaning:'ash', hint:'Cliff + fire' },
+    { char:'炎', left:'火', right:'火', meaning:'flame', hint:'Two fires' },
+    { char:'热', left:'执', right:'灬', meaning:'hot', hint:'Hold + fire' },
+    { char:'照', left:'昭', right:'灬', meaning:'illuminate', hint:'Bright + fire' },
+    { char:'然', left:'肰', right:'灬', meaning:'thus/natural', hint:'Meat + fire' },
+    { char:'谢', left:'言', right:'射', meaning:'thank', hint:'Speech + shoot' },
+    { char:'街', left:'彳', right:'圭', meaning:'street', hint:'Walk + tablet' },
+    { char:'往', left:'彳', right:'主', meaning:'toward', hint:'Walk + lord' },
+    { char:'征', left:'彳', right:'正', meaning:'campaign', hint:'Walk + correct' },
+    { char:'待', left:'彳', right:'寺', meaning:'wait', hint:'Walk + temple' },
+    { char:'很', left:'彳', right:'艮', meaning:'very', hint:'Walk + tough' },
+    { char:'得', left:'彳', right:'㝵', meaning:'obtain', hint:'Walk + ability' },
+    { char:'说', left:'讠', right:'兑', meaning:'speak', hint:'Speech + exchange' },
+    { char:'话', left:'讠', right:'舌', meaning:'language', hint:'Speech + tongue' },
+    { char:'计', left:'讠', right:'十', meaning:'plan', hint:'Speech + ten' },
+    { char:'认', left:'讠', right:'人', meaning:'recognize', hint:'Speech + person' },
+    { char:'让', left:'讠', right:'上', meaning:'yield', hint:'Speech + above' },
+    { char:'议', left:'讠', right:'义', meaning:'discuss', hint:'Speech + justice' },
+    { char:'记', left:'讠', right:'己', meaning:'record', hint:'Speech + self' },
+    { char:'讲', left:'讠', right:'井', meaning:'lecture', hint:'Speech + well' },
+    { char:'许', left:'讠', right:'午', meaning:'allow', hint:'Speech + noon' },
+    { char:'诉', left:'讠', right:'斥', meaning:'complain', hint:'Speech + scold' },
+    { char:'词', left:'讠', right:'司', meaning:'word', hint:'Speech + manage' },
+    { char:'译', left:'讠', right:'睪', meaning:'translate', hint:'Speech + inspect' },
+    { char:'试', left:'讠', right:'式', meaning:'test', hint:'Speech + style' },
+    { char:'诗', left:'讠', right:'寺', meaning:'poem', hint:'Speech + temple' },
+    { char:'诚', left:'讠', right:'成', meaning:'sincere', hint:'Speech + become' },
+    { char:'误', left:'讠', right:'吴', meaning:'error', hint:'Speech + surname' },
+    { char:'请', left:'讠', right:'青', meaning:'please', hint:'Speech + green' },
+    { char:'诺', left:'讠', right:'若', meaning:'promise', hint:'Speech + if' },
+    { char:'读', left:'讠', right:'卖', meaning:'read', hint:'Speech + sell' },
+    { char:'课', left:'讠', right:'果', meaning:'lesson', hint:'Speech + fruit' },
+    { char:'谁', left:'讠', right:'隹', meaning:'who', hint:'Speech + bird' },
+    { char:'调', left:'讠', right:'周', meaning:'adjust', hint:'Speech + thorough' },
+    { char:'谈', left:'讠', right:'炎', meaning:'talk', hint:'Speech + flame' },
+    { char:'谣', left:'讠', right:'䍃', meaning:'rumor', hint:'Speech + distant' },
+    { char:'谦', left:'讠', right:'兼', meaning:'humble', hint:'Speech + concurrent' },
+    { char:'眼', left:'目', right:'艮', meaning:'eye', hint:'Eye + tough' },
+    { char:'睛', left:'目', right:'青', meaning:'eyeball', hint:'Eye + green' },
+    { char:'睁', left:'目', right:'争', meaning:'open eyes', hint:'Eye + struggle' },
+    { char:'瞧', left:'目', right:'焦', meaning:'look/glance', hint:'Eye + scorch' },
+    { char:'盯', left:'目', right:'丁', meaning:'stare', hint:'Eye + nail' },
+    { char:'睡', left:'目', right:'垂', meaning:'sleep', hint:'Eye + droop' },
+    { char:'矿', left:'石', right:'广', meaning:'mine/mineral', hint:'Stone + broad' },
+    { char:'码', left:'石', right:'马', meaning:'code', hint:'Stone + horse' },
+    { char:'研', left:'石', right:'开', meaning:'research', hint:'Stone + open' },
+    { char:'砖', left:'石', right:'专', meaning:'brick', hint:'Stone + special' },
+    { char:'破', left:'石', right:'皮', meaning:'break', hint:'Stone + skin' }
   ];
 
-  let currentLevel = 0;
-  let selectedLeft = null, selectedRight = null;
-  let score = 0, streak = 0;
-  const ALL_RADICALS = ['亻','木','女','子','日','月','人','力','工','口','寸','也','门','十','山','二','言','白','才',
-    '公','卯','兆','每','土','干','几','扌','丁','戈','巴','立','包','旨','安','是','隹','氵','可','胡','先','舌','青','罙','火',
-    '昌','乞','丩','欠','又','斤','曷','者','阝','孝','攵','娄','雨','彐','田','路','相','叚','艹','化','早','央','古','约','水',
-    '手','目','心','亡','刃','士','中','合','厂','一','门','囗','玉','宀','女','豕','相','音','自','执','灬','昭','肰','里',
-    '言','射','彳','圭','林','夕','角','吅','昌','从','金','爫','友','吂','凡','立','上','下','小','大','乂','厶'];
+  // Extended radical pool — all unique components from character DB
+  const ALL_RADICALS = [
+    '亻','木','女','子','日','月','人','力','工','口','寸','也','门','十','山','二','言','白','才',
+    '公','卯','兆','每','土','干','几','扌','丁','戈','巴','立','包','旨','安','是','隹','氵','可','胡',
+    '先','舌','青','罙','火','昌','乞','丩','欠','又','斤','曷','者','阝','孝','攵','娄','雨','彐','田',
+    '路','相','叚','艹','化','早','央','古','约','水','手','目','心','亡','刃','士','中','合','厂','一',
+    '囗','玉','宀','豕','音','自','执','灬','昭','肰','里','射','彳','圭','林','夕','角','吅','从',
+    '金','爫','友','吂','凡','上','下','小','大','乂','厶','本','杖','丈','弋','牛','介','方','犬',
+    '伍','五','尤','估','何','但','旦','乍','低','氐','住','主','佩','吏','例','列','供','共',
+    '依','衣','侍','寺','佳','支','柱','艮','根','各','格','桥','乔','桶','甬','杨','昜','棋','其','模',
+    '莫','样','羊','沙','少','法','去','波','皮','注','洋','洪','洲','州','洞','同','流','充','浮','孚',
+    '浴','谷','浪','良','浸','侵','涌','灿','炉','户','炮','烧','尧','烟','因','烦','页','叶','吼','孔',
+    '吵','吸','及','吟','今','吻','勿','味','未','咳','亥','哨','肖','唤','奂','啊','阿','啤','卑','嘛',
+    '麻','吓','圆','员','围','韦','团','圈','卷','图','冬','守','宅','乇','宇','于','完','元','宝','宗',
+    '示','定','正','官','𠂤','室','至','宫','客','容','密','必','贫','分','贝','货','资','次','尘',
+    '晶','众','闭','很','得','㝵','说','讠','兑','话','计','认','让','议','义','记','己','讲','井','许',
+    '午','诉','斥','词','司','译','睪','试','式','诗','成','误','吴','请','诺','若','读','卖','课','谁',
+    '调','周','谈','谣','䍃','谦','兼','眼','睁','争','焦','瞧','盯','垂','睡','矿','石','广','码','马',
+    '研','开','砖','专','破','办','苏','夫','爪','扶','抓','夗','刍','奴','巩','亚','征','因','叀','你',
+    '县','非','原','或','才','员'
+  ];
+
+  // ========== Shuffle & State ==========
+  let PUZZLES, currentLevel, selectedLeft, selectedRight, score, streak, selectedMultiTarget;
+
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function resetGame() {
+    PUZZLES = shuffle(PUZZLES_ALL);
+    currentLevel = 0;
+    selectedLeft = null;
+    selectedRight = null;
+    score = 0;
+    streak = 0;
+    selectedMultiTarget = null;
+  }
+
+  function getTier() {
+    const t = currentLevel / PUZZLES.length;
+    if (t < 0.28) return 1;
+    if (t < 0.56) return 2;
+    if (t < 0.80) return 3;
+    return 4;
+  }
+
+  function getMultiTargetCount(tier) {
+    if (tier <= 2) return 1;
+    if (tier === 3) return Math.random() < 0.5 ? 2 : 3;
+    return Math.random() < 0.4 ? 3 : 4;
+  }
+
+  function getRadicalPoolSize(tier) {
+    if (tier === 1) return 9;
+    if (tier === 2) return 12; 
+    if (tier === 3) return 12;
+    return 15;
+  }
 
   function initLevel() {
     if (currentLevel >= PUZZLES.length) {
       document.querySelector('#finalCount').textContent = PUZZLES.length;
       document.querySelector('#finalScore').textContent = score;
-      showNameInput('hanzi', 'Completed: ' + PUZZLES.length + ' characters | Score: ' + score, function() {
+      showNameInput('hanzi', 'Completed: ' + PUZZLES.length + ' chars | Score: ' + score, function() {
         return { score: score, time_seconds: 0 };
       });
       document.querySelector('#completeModal').classList.add('active');
       return;
     }
-    const p = PUZZLES[currentLevel];
-    selectedLeft = null; selectedRight = null;
 
-    document.querySelector('#targetChar').textContent = p.char;
-    document.querySelector('#targetMeaning').textContent = p.meaning;
-    document.querySelector('#targetHint').textContent = p.hint || 'Can you build it?';
-    document.querySelector('#levelDisplay').textContent = `${currentLevel+1}/${PUZZLES.length}`;
-    document.querySelector('#curLvl').textContent = currentLevel + 1;
-    document.querySelector('#progressFill').style.width = ((currentLevel+1)/PUZZLES.length*100) + '%';
+    const tier = getTier();
+    const multiCount = getMultiTargetCount(tier);
+    selectedLeft = null;
+    selectedRight = null;
+    selectedMultiTarget = null;
+
     document.querySelector('#checkResult').textContent = '';
     document.querySelector('#checkResult').className = 'check-result';
-    document.querySelector('#buildHint').textContent = 'Select one radical from each side';
     document.querySelector('#leftPreview').textContent = '?';
     document.querySelector('#leftPreview').classList.remove('filled');
     document.querySelector('#rightPreview').textContent = '?';
     document.querySelector('#rightPreview').classList.remove('filled');
+    document.querySelector('#levelDisplay').textContent = `${currentLevel+1}/${PUZZLES.length}`;
+    document.querySelector('#curLvl').textContent = currentLevel + 1;
+    document.querySelector('#progressFill').style.width = ((currentLevel+1)/PUZZLES.length*100) + '%';
 
-    renderRadicalGrids(p);
+    if (multiCount === 1) {
+      document.querySelector('#multiTargetArea').classList.remove('active');
+      const p = PUZZLES[currentLevel];
+      document.querySelector('#targetChar').textContent = p.char;
+      document.querySelector('#targetMeaning').textContent = p.meaning;
+      document.querySelector('#targetHint').textContent = p.hint || 'Can you build it?';
+      document.querySelector('#buildHint').textContent = 'Select one radical from each side';
+      renderRadicalGrids(p, tier);
+    } else {
+      document.querySelector('#multiTargetArea').classList.add('active');
+      document.querySelector('#targetChar').textContent = '?';
+      document.querySelector('#targetMeaning').textContent = 'Pick one below';
+      document.querySelector('#targetHint').textContent = `Choose your challenge (Tier ${tier})`;
+      document.querySelector('#buildHint').textContent = 'First pick a character, then build it';
+      renderMultiTargets(multiCount, tier);
+      document.querySelector('#leftGrid').innerHTML = '';
+      document.querySelector('#rightGrid').innerHTML = '';
+    }
   }
 
-  function renderRadicalGrids(puzzle) {
-    // Generate candidate radicals for left and right sides
-    // Left pool: puzzle.left + 8 random distractors
-    // Right pool: puzzle.right + 8 random distractors
+  function renderMultiTargets(count, tier) {
+    const grid = document.querySelector('#multiTargetGrid');
+    grid.innerHTML = '';
+    const targets = [PUZZLES[currentLevel]];
+    const usedIdx = new Set([currentLevel]);
+    while (targets.length < count) {
+      const idx = Math.floor(Math.random() * PUZZLES.length);
+      if (!usedIdx.has(idx)) { usedIdx.add(idx); targets.push(PUZZLES[idx]); }
+    }
+    const shuffledTargets = shuffle(targets);
+
+    shuffledTargets.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'multi-target-card';
+      card.innerHTML = `<div class="mt-char">${p.char}</div><div class="mt-hint">${p.hint || p.meaning}</div>`;
+      card.addEventListener('click', () => {
+        grid.querySelectorAll('.multi-target-card').forEach(c => c.classList.remove('selected-target'));
+        card.classList.add('selected-target');
+        selectedMultiTarget = p;
+        document.querySelector('#targetChar').textContent = p.char;
+        document.querySelector('#targetMeaning').textContent = p.meaning;
+        document.querySelector('#targetHint').textContent = p.hint || 'Can you build it?';
+        document.querySelector('#buildHint').textContent = 'Now select one radical from each side';
+        document.querySelector('#checkResult').textContent = '';
+        document.querySelector('#checkResult').className = 'check-result';
+        selectedLeft = null; selectedRight = null;
+        document.querySelector('#leftPreview').textContent = '?';
+        document.querySelector('#leftPreview').classList.remove('filled');
+        document.querySelector('#rightPreview').textContent = '?';
+        document.querySelector('#rightPreview').classList.remove('filled');
+        renderRadicalGrids(p, tier);
+      });
+      grid.appendChild(card);
+    });
+  }
+
+  function renderRadicalGrids(puzzle, tier) {
+    const poolSize = getRadicalPoolSize(tier);
+    const cols = poolSize <= 9 ? 3 : (poolSize <= 12 ? 4 : 5);
+
     function buildPool(correct, count) {
       let pool = [correct];
       const used = new Set([correct]);
-      while (pool.length < count) {
-        const r = ALL_RADICALS[Math.floor(Math.random() * ALL_RADICALS.length)];
+      const candidates = ALL_RADICALS.filter(r => r !== correct);
+      while (pool.length < count && candidates.length > 0) {
+        const r = candidates[Math.floor(Math.random() * candidates.length)];
         if (!used.has(r)) { used.add(r); pool.push(r); }
       }
-      // shuffle
-      for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i+1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
       return pool;
     }
 
-    const leftPool = buildPool(puzzle.left, 9);
-    const rightPool = buildPool(puzzle.right, 9);
+    const leftPool = buildPool(puzzle.left, poolSize);
+    const rightPool = buildPool(puzzle.right, poolSize);
 
     function renderGrid(containerId, pool, side) {
       const grid = document.querySelector(containerId);
       grid.innerHTML = '';
+      grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
       pool.forEach(radical => {
         const card = document.createElement('div');
         card.className = 'radical-card';
@@ -391,7 +625,7 @@
             selectedRight = (selectedRight === radical) ? null : radical;
           }
           updatePreview();
-          renderRadicalGrids(PUZZLES[currentLevel]);
+          renderRadicalGrids(puzzle, tier);
           document.querySelector('#checkResult').textContent = '';
           document.querySelector('#checkResult').className = 'check-result';
         });
@@ -412,57 +646,95 @@
     rp.classList.toggle('filled', !!selectedRight);
 
     if (selectedLeft && selectedRight) {
-      document.querySelector('#buildHint').textContent = `You selected: ${selectedLeft} + ${selectedRight} — ready to submit!`;
+      document.querySelector('#buildHint').textContent = `Combined: ${selectedLeft} + ${selectedRight} — Submit to check!`;
     } else if (selectedLeft || selectedRight) {
-      document.querySelector('#buildHint').textContent = 'Now pick the other side...';
+      document.querySelector('#buildHint').textContent = 'Pick the other side to complete...';
+    } else if (selectedMultiTarget) {
+      document.querySelector('#buildHint').textContent = 'Now select one radical from each side';
     } else {
-      document.querySelector('#buildHint').textContent = 'Select one radical from each side';
+      document.querySelector('#buildHint').textContent = 'Select a character above, then pick radicals';
     }
   }
 
+  function getCurrentPuzzle() {
+    return selectedMultiTarget || PUZZLES[currentLevel];
+  }
+
   function submitAnswer() {
-    const puzzle = PUZZLES[currentLevel];
+    const puzzle = getCurrentPuzzle();
+    const tier = getTier();
+    if (!selectedMultiTarget && tier >= 3) {
+      document.querySelector('#checkResult').textContent = '✗ First pick a character to build from the options above!';
+      document.querySelector('#checkResult').className = 'check-result fail';
+      return;
+    }
     if (!selectedLeft || !selectedRight) {
-      document.querySelector('#checkResult').textContent = '✗ Pick a radical from BOTH sides first!';
+      document.querySelector('#checkResult').textContent = '✗ Pick a radical from BOTH sides!';
       document.querySelector('#checkResult').className = 'check-result fail';
       return;
     }
 
     if (selectedLeft === puzzle.left && selectedRight === puzzle.right) {
       streak++;
-      score += 100 + (streak > 2 ? streak * 10 : 0);
+      const bonus = streak > 2 ? streak * 10 : 0;
+      const tierBonus = tier * 15;
+      score += 100 + bonus + tierBonus;
       document.querySelector('#scoreDisplay').textContent = score;
       document.querySelector('#streakDisplay').textContent = streak;
-      document.querySelector('#checkResult').textContent = `✓ Correct! ${puzzle.char} = ${puzzle.left} + ${puzzle.right}  (${puzzle.meaning})`;
+      document.querySelector('#checkResult').textContent = `✓ Correct! ${puzzle.char} = ${puzzle.left} + ${puzzle.right} (${puzzle.meaning})`;
       document.querySelector('#checkResult').className = 'check-result success';
-      setTimeout(() => { currentLevel++; initLevel(); }, 800);
+      setTimeout(() => { currentLevel++; initLevel(); }, 900);
     } else {
       streak = 0;
       document.querySelector('#streakDisplay').textContent = streak;
       document.querySelector('#checkResult').textContent = `✗ "${selectedLeft}+${selectedRight}" ≠ "${puzzle.char}". Try different radicals!`;
       document.querySelector('#checkResult').className = 'check-result fail';
+      if (!window._hzFail) window._hzFail = 0;
+      window._hzFail++;
+      if (window._hzFail >= 2) {
+        window._hzFail = 0;
+        setTimeout(() => {
+          document.querySelector('#checkResult').textContent = `💡 Hint: "${puzzle.hint}" — think ${puzzle.left} + ${puzzle.right}`;
+          document.querySelector('#checkResult').className = 'check-result success';
+        }, 600);
+      }
     }
   }
 
   function provideHint() {
-    const p = PUZZLES[currentLevel];
+    const p = getCurrentPuzzle();
     document.querySelector('#checkResult').textContent = `💡 Hint: "${p.hint}" — try ${p.left} + ${p.right}`;
     document.querySelector('#checkResult').className = 'check-result success';
     score = Math.max(0, score - 5);
     document.querySelector('#scoreDisplay').textContent = score;
+    window._hzFail = 0;
   }
 
+  // Event bindings
   document.querySelector('#submitBtn').addEventListener('click', submitAnswer);
-  document.querySelector('#clearBtn').addEventListener('click', () => { selectedLeft = null; selectedRight = null; initLevel(); });
+  document.querySelector('#clearBtn').addEventListener('click', () => {
+    selectedLeft = null; selectedRight = null; selectedMultiTarget = null;
+    initLevel();
+  });
   document.querySelector('#hintBtn').addEventListener('click', provideHint);
-  document.querySelector('#skipBtn').addEventListener('click', () => { streak = 0; document.querySelector('#streakDisplay').textContent = '0'; currentLevel++; initLevel(); });
+  document.querySelector('#skipBtn').addEventListener('click', () => {
+    streak = 0; document.querySelector('#streakDisplay').textContent = '0';
+    currentLevel++; window._hzFail = 0; initLevel();
+  });
+  document.querySelector('#lbSubmitBtn').addEventListener('click', () => {
+    showNameInput('hanzi', 'Progress: ' + (currentLevel+1) + '/' + PUZZLES.length + ' | Score: ' + score + ' | Streak: ' + streak, function() {
+      return { score: score, time_seconds: 0 };
+    });
+  });
   document.querySelector('#restartAllBtn').addEventListener('click', () => {
-    currentLevel = 0; score = 0; streak = 0;
-    document.querySelector('#scoreDisplay').textContent = '0'; document.querySelector('#streakDisplay').textContent = '0';
+    resetGame();
+    document.querySelector('#scoreDisplay').textContent = '0';
+    document.querySelector('#streakDisplay').textContent = '0';
     document.querySelector('#completeModal').classList.remove('active');
     initLevel();
   });
 
+  resetGame();
   initLevel();
 })();
 </script>

@@ -128,6 +128,7 @@
       <div class="game-actions">
         <button class="btn btn-secondary btn-sm" id="undoBtn">↩ Undo</button>
         <button class="btn btn-primary btn-sm" id="restartBtn">🔄 Restart</button>
+        <button class="btn btn-gold btn-sm" id="lbSubmitBtn" title="Submit your current score to the leaderboard">🏆 Submit Score</button>
       </div>
     </div>
   </div>
@@ -455,6 +456,12 @@
   document.querySelector('#undoBtn').addEventListener('click', undoMove);
   document.querySelectorAll('.level-btn').forEach(btn => {
     btn.addEventListener('click', () => initLevel(parseInt(btn.dataset.level)));
+  });
+  document.querySelector('#lbSubmitBtn').addEventListener('click', () => {
+    const klotskiScore = Math.max(1000 - moveCount * 3, 10);
+    showNameInput('klotski', 'Level: ' + LEVELS[currentLevel].name + ' | ' + moveCount + ' moves | ' + formatTime(timerSeconds), function() {
+      return { score: klotskiScore, time_seconds: timerSeconds };
+    });
   });
 
   initLevel(0);

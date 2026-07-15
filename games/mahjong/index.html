@@ -93,6 +93,7 @@
         <button class="btn btn-secondary btn-sm" id="hintBtn">💡 Hint</button>
         <button class="btn btn-secondary btn-sm" id="shuffleBtn">🔀 Shuffle</button>
         <button class="btn btn-primary btn-sm" id="restartBtn">🔄 Restart</button>
+        <button class="btn btn-gold btn-sm" id="lbSubmitBtn" title="Submit your current score to the leaderboard">🏆 Submit Score</button>
       </div>
     </div>
   </div>
@@ -384,6 +385,11 @@
   document.querySelector('#hintBtn').addEventListener('click', provideHint);
   document.querySelector('#shuffleBtn').addEventListener('click', shuffleBoard);
   document.querySelector('#shuffleFromNoMoves').addEventListener('click', shuffleBoard);
+  document.querySelector('#lbSubmitBtn').addEventListener('click', () => {
+    showNameInput('mahjong', 'Level: ' + (currentLevelIdx+1) + ' | Score: ' + score + ' | Best: ' + bestLevel, function() {
+      return { score: score + (bestLevel * 200), time_seconds: timerSeconds };
+    });
+  });
 
   // Init
   bestLevelDisplay.textContent = bestLevel;

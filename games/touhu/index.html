@@ -72,6 +72,7 @@
       </div>
       <div class="game-actions">
         <button class="btn btn-primary btn-sm" id="restartBtn">🔄 New Game</button>
+        <button class="btn btn-gold btn-sm" id="lbSubmitBtn" title="Submit your current score to the leaderboard">🏆 Submit Score</button>
       </div>
     </div>
   </div>
@@ -473,6 +474,11 @@
 
   document.querySelector('#restartBtn').addEventListener('click', restartGame);
   document.querySelector('#playAgainBtn').addEventListener('click', restartGame);
+  document.querySelector('#lbSubmitBtn').addEventListener('click', () => {
+    showNameInput('touhu', 'Score: ' + score + ' / ' + MAX_THROWS + ' throws', function() {
+      return { score: score, time_seconds: 0 };
+    });
+  });
 
   // Init
   windForce = randomWind();

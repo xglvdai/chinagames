@@ -1,5 +1,5 @@
 /**
- * DragonTile Games API Worker
+ * ZenMatch Games API Worker
  * 
  * Endpoints:
  *   GET  /api/leaderboard/:game  → Get top scores

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Hanzi Match — 150 Chinese Characters | DragonTile Games</title>
+  <title>Hanzi Match — 150 Chinese Characters | ZenMatch Games</title>
   <meta name="description" content="Build 150 Chinese characters from radicals! Pick a left and right component, then submit to check. Learn Hanzi through play.">
   <link rel="canonical" href="https://zenmatchgames.com/games/hanzi/">
   <link rel="stylesheet" href="/css/style.css">
@@ -60,7 +60,7 @@
 <body>
 <nav class="nav" id="nav">
   <div class="container nav-inner">
-    <a href="/" class="nav-logo"><span class="logo-icon">龍</span><span class="logo-text">DragonTile</span></a>
+    <a href="/" class="nav-logo"><span class="logo-icon">龍</span><span class="logo-text">ZenMatch</span></a>
     <ul class="nav-links">
       <li><a href="/" class="nav-link">Home</a></li>
       <li class="nav-dropdown">
@@ -330,6 +330,9 @@
     if (currentLevel >= PUZZLES.length) {
       document.querySelector('#finalCount').textContent = PUZZLES.length;
       document.querySelector('#finalScore').textContent = score;
+      showNameInput('hanzi', 'Completed: ' + PUZZLES.length + ' characters | Score: ' + score, function() {
+        return { score: score, time_seconds: 0 };
+      });
       document.querySelector('#completeModal').classList.add('active');
       return;
     }
@@ -463,5 +466,6 @@
   initLevel();
 })();
 </script>
+<script src="/js/leaderboard.js"></script>
 </body>
 </html>

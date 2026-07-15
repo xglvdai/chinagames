@@ -1,5 +1,5 @@
 /**
- * DragonTile Games — Main JavaScript
+ * ZenMatch Games — Main JavaScript
  * Handles navigation, leaderboard, animations, interactions
  */
 
@@ -132,47 +132,42 @@ function initLeaderboard() {
 
   const API_BASE = 'https://api.zenmatchgames.com';
 
-  // Leaderboard data — local scores with fallback mock
-  const mockData = {
-    mahjong: [
-      { rank: 1, player: 'DragonMaster', score: 'Level 10', time: '8:42', date: '2026-07-10' },
-      { rank: 2, player: 'TileWhisperer', score: 'Level 9', time: '12:15', date: '2026-07-09' },
-      { rank: 3, player: 'ZenPanda', score: 'Level 8', time: '10:30', date: '2026-07-08' },
-      { rank: 4, player: 'BambooKing', score: 'Level 7', time: '15:00', date: '2026-07-07' },
-      { rank: 5, player: 'JadeWarrior', score: 'Level 6', time: '11:20', date: '2026-07-06' },
-      { rank: 6, player: 'SilkRoad', score: 'Level 5', time: '9:45', date: '2026-07-05' },
-      { rank: 7, player: 'LotusFlower', score: 'Level 5', time: '14:10', date: '2026-07-04' },
-      { rank: 8, player: 'EastWind', score: 'Level 4', time: '8:00', date: '2026-07-03' },
-      { rank: 9, player: 'GreatWall', score: 'Level 3', time: '6:30', date: '2026-07-02' },
-      { rank: 10, player: 'RiceField', score: 'Level 2', time: '4:15', date: '2026-07-01' },
-    ],
-    klotski: [
-      { rank: 1, player: 'CaoCaoFan', score: 'Classic', time: '0:45 (35 moves)', date: '2026-07-10' },
-      { rank: 2, player: 'PuzzleKing', score: 'Classic', time: '0:52 (42 moves)', date: '2026-07-09' },
-      { rank: 3, player: 'SlidingPro', score: 'Easy', time: '0:18 (22 moves)', date: '2026-07-08' },
-      { rank: 4, player: 'LogicLord', score: 'Easy', time: '0:25 (30 moves)', date: '2026-07-07' },
-      { rank: 5, player: 'BrainTrainer', score: 'Easy', time: '0:32 (38 moves)', date: '2026-07-06' },
-    ],
-    hanzi: [
-      { rank: 1, player: 'WordSmith', score: '150/150', time: '—', date: '2026-07-10' },
-      { rank: 2, player: 'RadicalRacer', score: '120/150', time: '—', date: '2026-07-09' },
-      { rank: 3, player: 'HanziHero', score: '95/150', time: '—', date: '2026-07-08' },
-      { rank: 4, player: 'SymbolMaster', score: '60/150', time: '—', date: '2026-07-07' },
-      { rank: 5, player: 'CharacterPro', score: '30/150', time: '—', date: '2026-07-06' },
-    ]
-  };
-
-  function renderLeaderboard(game) {
-    const data = mockData[game] || [];
-    tbody.innerHTML = data.map(row => `
-      <tr>
-        <td><span class="${row.rank <= 3 ? 'rank-' + row.rank : ''}">#${row.rank}</span></td>
-        <td>${row.player}</td>
-        <td>${row.score.toLocaleString()}</td>
-        <td>${row.time}</td>
-        <td>${row.date}</td>
-      </tr>
-    `).join('');
+  async function renderLeaderboard(game) {
+    tbody.innerHTML = '<tr><td colspan="5" class="loading">Loading leaderboard...</td></tr>';
+    try {
+      const res = await fetch(API_BASE + '/api/leaderboard/' + game);
+      const data = await res.json();
+      if (data && data.length) {
+        tbody.innerHTML = data.map((row, i) => `
+          <tr>
+            <td><span class="${i < 3 ? 'rank-' + (i+1) : ''}">#${i+1}</span></td>
+            <td>${row.player}</td>
+            <td>${(row.score || 0).toLocaleString()}</td>
+            <td>${row.time_seconds ? Math.floor(row.time_seconds/60) + ':' + String(row.time_seconds%60).padStart(2,'0') : '—'}</td>
+            <td>${row.created_at ? new Date(row.created_at).toLocaleDateString() : '—'}</td>
+          </tr>
+        `).join('');
+        return;
+      }
+    } catch(e) {
+      console.warn('API unavailable, using local scores');
+    }
+    // Fallback: local scores
+    const localScores = JSON.parse(localStorage.getItem('zenmatch_local_scores') || '{}');
+    const data = (localScores[game] || []).slice(0, 10);
+    if (data.length) {
+      tbody.innerHTML = data.map((row, i) => `
+        <tr>
+          <td><span class="${i < 3 ? 'rank-' + (i+1) : ''}">#${i+1}</span></td>
+          <td>${row.player}</td>
+          <td>${(row.score || 0).toLocaleString()}</td>
+          <td>${row.time_seconds ? Math.floor(row.time_seconds/60) + ':' + String(row.time_seconds%60).padStart(2,'0') : '—'}</td>
+          <td>${row.date ? row.date.slice(0,10) : '—'}</td>
+        </tr>
+      `).join('');
+    } else {
+      tbody.innerHTML = '<tr><td colspan="5">No scores yet — be the first to play!</td></tr>';
+    }
   }
 
   tabs.forEach(tab => {

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Pitch-Pot — Touhu | DragonTile Games</title>
+  <title>Pitch-Pot — Touhu | ZenMatch Games</title>
   <meta name="description" content="Play Pitch-pot (Touhu), the ancient Chinese archery game. Click to aim, hold to charge, release to throw!">
   <link rel="canonical" href="https://zenmatchgames.com/games/touhu/">
   <link rel="stylesheet" href="/css/style.css">
@@ -39,7 +39,7 @@
 <body>
 <nav class="nav" id="nav">
   <div class="container nav-inner">
-    <a href="/" class="nav-logo"><span class="logo-icon">龍</span><span class="logo-text">DragonTile</span></a>
+    <a href="/" class="nav-logo"><span class="logo-icon">龍</span><span class="logo-text">ZenMatch</span></a>
     <ul class="nav-links">
       <li><a href="/" class="nav-link">Home</a></li>
       <li class="nav-dropdown">
@@ -362,6 +362,9 @@
     else if (score >= 200) { icon.textContent='🏆'; title.textContent='Expert Thrower!'; rating.textContent='⭐⭐ Great aim!'; }
     else if (score >= 100) { icon.textContent='🎯'; title.textContent='Good Game!'; rating.textContent='⭐ Keep practicing!'; }
     else { icon.textContent='🏺'; title.textContent='Good Effort!'; rating.textContent='Practice makes perfect'; }
+    showNameInput('touhu', 'Score: ' + score + ' / 500', function() {
+      return { score: score, time_seconds: 0 };
+    });
     document.querySelector('#gameOverModal').classList.add('active');
   }
 
@@ -477,5 +480,6 @@
   draw();
 })();
 </script>
+<script src="/js/leaderboard.js"></script>
 </body>
 </html>

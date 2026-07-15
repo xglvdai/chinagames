@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Mahjong Solitaire — 10 Levels | DragonTile Games</title>
+  <title>Mahjong Solitaire — 10 Levels | ZenMatch Games</title>
   <meta name="description" content="Play free Mahjong Solitaire with 10 progressive levels. Match identical tiles to clear the board. Track your best level and time!">
   <link rel="canonical" href="https://zenmatchgames.com/games/mahjong/">
   <link rel="stylesheet" href="/css/style.css">
@@ -56,7 +56,7 @@
 <body>
 <nav class="nav" id="nav">
   <div class="container nav-inner">
-    <a href="/" class="nav-logo"><span class="logo-icon">龍</span><span class="logo-text">DragonTile</span></a>
+    <a href="/" class="nav-logo"><span class="logo-icon">龍</span><span class="logo-text">ZenMatch</span></a>
     <ul class="nav-links">
       <li><a href="/" class="nav-link">Home</a></li>
       <li class="nav-dropdown">
@@ -263,6 +263,10 @@
         document.querySelector('#winTitle').textContent = 'Grandmaster!';
         document.querySelector('#winMsg').textContent = 'You completed ALL 10 levels! Total time: ' + formatTime(totalTime);
         document.querySelector('#nextLevelBtn').style.display = 'none';
+        // Leaderboard: prompt for player name after beating all levels
+        showNameInput('mahjong', 'Total Time: ' + formatTime(totalTime) + ' | Best Level: ' + bestLevel, function() {
+          return { score: bestLevel * 100 + score, time_seconds: totalTime };
+        });
       }
       winModal.classList.add('active');
     } else {
@@ -386,5 +390,6 @@
   startLevel(bestLevel - 1);
 })();
 </script>
+<script src="/js/leaderboard.js"></script>
 </body>
 </html>

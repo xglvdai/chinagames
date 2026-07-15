@@ -1,7 +1,7 @@
 {
-  "name": "dragontile-api",
+  "name": "chinagames-api",
   "version": "1.0.0",
-  "description": "DragonTile Games — Cloudflare Worker API for leaderboards and game data",
+  "description": "ZenMatch Games — Cloudflare Worker API for leaderboards and game data",
   "private": true,
   "main": "src/index.js",
   "scripts": {

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Abacus Enigma — Bead Puzzle | DragonTile Games</title>
+  <title>Abacus Enigma — Bead Puzzle | ZenMatch Games</title>
   <meta name="description" content="Slide abacus beads to solve number puzzles. Each column: 1 heaven bead (5) + 5 earth beads (1 each). Match the target number!">
   <link rel="canonical" href="https://zenmatchgames.com/games/abacus/">
   <link rel="stylesheet" href="/css/style.css">
@@ -95,7 +95,7 @@
 <body>
 <nav class="nav" id="nav">
   <div class="container nav-inner">
-    <a href="/" class="nav-logo"><span class="logo-icon">龍</span><span class="logo-text">DragonTile</span></a>
+    <a href="/" class="nav-logo"><span class="logo-icon">龍</span><span class="logo-text">ZenMatch</span></a>
     <ul class="nav-links">
       <li><a href="/" class="nav-link">Home</a></li>
       <li class="nav-dropdown">
@@ -336,6 +336,9 @@
     gameOver = true; stopTimer();
     document.querySelector('#finalScore').textContent = score;
     document.querySelector('#finalTime').textContent = formatTime(timerSeconds);
+    showNameInput('abacus', 'Score: ' + score + ' | Time: ' + formatTime(timerSeconds), function() {
+      return { score: score, time_seconds: timerSeconds };
+    });
     document.querySelector('#completeModal').classList.add('active');
   }
 
@@ -375,5 +378,6 @@
   startTimer();
 })();
 </script>
+<script src="/js/leaderboard.js"></script>
 </body>
 </html>

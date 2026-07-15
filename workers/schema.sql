@@ -1,4 +1,4 @@
--- DragonTile Games — D1 Database Schema
+-- ZenMatch Games — D1 Database Schema
 -- Run this in Cloudflare D1 dashboard or via: wrangler d1 execute dragontile-db --file=schema.sql
 
 CREATE TABLE IF NOT EXISTS scores (

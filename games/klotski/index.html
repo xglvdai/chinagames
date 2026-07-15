@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Klotski — Hua Rong Dao | DragonTile Games</title>
+  <title>Klotski — Hua Rong Dao | ZenMatch Games</title>
   <meta name="description" content="Play Klotski (Hua Rong Dao): the ancient Chinese sliding block puzzle. Free Cao Cao in 3 layouts!">
   <link rel="canonical" href="https://zenmatchgames.com/games/klotski/">
   <link rel="stylesheet" href="/css/style.css">
@@ -94,7 +94,7 @@
 <body>
 <nav class="nav" id="nav">
   <div class="container nav-inner">
-    <a href="/" class="nav-logo"><span class="logo-icon">龍</span><span class="logo-text">DragonTile</span></a>
+    <a href="/" class="nav-logo"><span class="logo-icon">龍</span><span class="logo-text">ZenMatch</span></a>
     <ul class="nav-links">
       <li><a href="/" class="nav-link">Home</a></li>
       <li class="nav-dropdown">
@@ -317,6 +317,9 @@
       document.querySelector('#winMoves').textContent = moveCount;
       document.querySelector('#winTime').textContent = formatTime(timerSeconds);
       document.querySelector('#winBest').textContent = LEVELS[currentLevel].best;
+      showNameInput('klotski', 'Level: ' + LEVELS[currentLevel].name + ' | ' + moveCount + ' moves', function() {
+        return { score: Math.max(1000 - moveCount * 5, 0), time_seconds: timerSeconds };
+      });
       winModal.classList.add('active');
     }
   }
@@ -457,5 +460,6 @@
   initLevel(0);
 })();
 </script>
+<script src="/js/leaderboard.js"></script>
 </body>
 </html>

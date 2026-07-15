@@ -12,8 +12,6 @@
     .game-header-bar { background: var(--color-bg-alt); border-bottom: 1px solid var(--color-border); padding: var(--space-md) 0; }
     .game-header-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-md); }
     .game-title-area h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
-    .game-breadcrumb { font-size: 0.8rem; color: var(--color-text-muted); }
-    .game-breadcrumb a { color: var(--color-gold); }
     .game-stats-bar { display: flex; gap: var(--space-lg); }
     .game-stat-item { text-align: center; }
     .game-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--color-gold-light); font-family: var(--font-display); }
@@ -39,7 +37,6 @@
     .lv-btn.lv-hard { --lv-clr: #f7b731; }
     .lv-btn.lv-hell { --lv-clr: #e63946; }
     .lv-btn.active { background: var(--lv-clr); border-color: var(--lv-clr); color: #fff; transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
-    .lv-btn.locked { opacity: 0.4; pointer-events: none; }
 
     /* Target */
     .target-area { text-align: center; margin-bottom: 0; }
@@ -154,7 +151,6 @@
   <div class="game-header-bar">
     <div class="container game-header-inner">
       <div class="game-title-area">
-        <div class="game-breadcrumb"><a href="/">Home</a> / Games / <strong>Hanzi Match</strong></div>
         <h1>林 Hanzi Match</h1>
       </div>
       <div class="game-stats-bar">
@@ -172,9 +168,9 @@
   <div class="container game-board-wrap">
     <!-- Level selector -->
     <div class="level-select-bar" id="levelSelectBar">
-      <button class="lv-btn lv-normal active" data-lv="1">🌱 普通</button>
-      <button class="lv-btn lv-hard locked" data-lv="2">🔥 困难</button>
-      <button class="lv-btn lv-hell locked" data-lv="3">💀 地狱</button>
+      <button class="lv-btn lv-normal active" data-lv="1">🌱 Normal</button>
+      <button class="lv-btn lv-hard" data-lv="2">🔥 Hard</button>
+      <button class="lv-btn lv-hell" data-lv="3">💀 Hell</button>
     </div>
 
     <div class="level-progress">
@@ -223,7 +219,7 @@
      CHARACTER DATABASE — 3 Difficulty Levels
      ================================================================ */
 
-  // Level 1 (普通): 2-component characters, left-right or top-bottom
+  // Level 1 (Normal): 2-component characters, left-right or top-bottom
   const LEVEL_1 = [
     // --- left-right ---
     { char:'休', parts:['亻','木'], meaning:'rest', hint:'Person by tree', layout:'horiz' },
@@ -270,7 +266,7 @@
     { char:'炎', parts:['火','火'], meaning:'flame', hint:'Two fires', layout:'vert' },
   ];
 
-  // Level 2 (困难): 3-component characters
+  // Level 2 (Hard): 3-component characters
   const LEVEL_2 = [
     { char:'森', parts:['木','木','木'], meaning:'dense forest', hint:'Three trees stacked', layout:'vert' },
     { char:'晶', parts:['日','日','日'], meaning:'crystal', hint:'Three suns stacked', layout:'vert' },
@@ -289,7 +285,7 @@
     { char:'杂', parts:['九','木','小'], meaning:'mixed', hint:'Nine + tree + small', layout:'vert' },
   ];
 
-  // Level 3 (地狱): 4-component characters
+  // Level 3 (Hell): 4-component characters
   const LEVEL_3 = [
     { char:'蕊', parts:['艹','心','心','心'], meaning:'stamen', hint:'Grass + three hearts', layout:'vert' },
     { char:'照', parts:['日','刀','口','灬'], meaning:'illuminate', hint:'Sun + knife + mouth + fire', layout:'vert' },
@@ -304,7 +300,7 @@
   ];
 
   const LEVELS = { 1: LEVEL_1, 2: LEVEL_2, 3: LEVEL_3 };
-  const LEVEL_NAMES = { 1: '普通', 2: '困难', 3: '地狱' };
+  const LEVEL_NAMES = { 1: 'Normal', 2: 'Hard', 3: 'Hell' };
   const RADICALS_PER_PART = { 1: 8, 2: 6, 3: 6 }; // options per part (reduced!)
   const GRID_COLS = { 1: 4, 2: 3, 3: 3 }; // 2×4 or 2×3
 
@@ -338,7 +334,6 @@
   }
 
   function switchLevel(lvId) {
-    if (lvId > 1 && !isLevelUnlocked(lvId)) return;
     currentLvId = lvId;
     puzzles = shuffle(LEVELS[lvId]);
     currentIdx = 0;
@@ -352,22 +347,11 @@
     initPuzzle();
   }
 
-  function isLevelUnlocked(lvId) {
-    if (lvId === 1) return true;
-    // Unlock level 2 after completing level 1, etc.
-    return localStorage.getItem('hanzi_lv' + (lvId - 1) + '_done') === '1';
-  }
-
-  function markLevelComplete(lvId) {
-    localStorage.setItem('hanzi_lv' + lvId + '_done', '1');
-  }
-
   function updateLevelButtons() {
     document.querySelectorAll('.lv-btn').forEach(btn => {
       const lv = parseInt(btn.dataset.lv);
-      btn.classList.remove('active', 'locked');
+      btn.classList.remove('active');
       if (lv === currentLvId) btn.classList.add('active');
-      else if (!isLevelUnlocked(lv)) btn.classList.add('locked');
     });
   }
 
@@ -554,17 +538,10 @@
   }
 
   function onLevelComplete() {
-    markLevelComplete(currentLvId);
     document.querySelector('#finalScore').textContent = score;
     const lvName = LEVEL_NAMES[currentLvId];
     document.querySelector('#completeTitle').textContent = `${lvName} — Complete!`;
     document.querySelector('#completeMsg').textContent = `You mastered all ${puzzles.length} characters at ${lvName} level!`;
-
-    // Unlock next level
-    if (currentLvId < 3) {
-      document.querySelector('#completeMsg').textContent += ` ${LEVEL_NAMES[currentLvId+1]} unlocked!`;
-      updateLevelButtons();
-    }
 
     document.querySelector('#completeModal').classList.add('active');
   }

@@ -87,7 +87,6 @@
         </ul>
       </li>
       <li><a href="/how-to-play/#guide-hanzi" class="nav-link">How to Play</a></li>
-      <li><a href="/#leaderboard" class="nav-link">Leaderboard</a></li>
     </ul>
   </div>
 </nav>
@@ -107,7 +106,6 @@
       <div class="game-actions">
         <button class="btn btn-secondary btn-sm" id="hintBtn">💡 Hint</button>
         <button class="btn btn-secondary btn-sm" id="skipBtn">⏭ Skip</button>
-        <button class="btn btn-gold btn-sm" id="lbSubmitBtn" title="Submit your current score to the leaderboard">🏆 Submit Score</button>
       </div>
     </div>
   </div>
@@ -507,9 +505,6 @@
     if (currentLevel >= PUZZLES.length) {
       document.querySelector('#finalCount').textContent = PUZZLES.length;
       document.querySelector('#finalScore').textContent = score;
-      showNameInput('hanzi', 'Completed: ' + PUZZLES.length + ' chars | Score: ' + score, function() {
-        return { score: score, time_seconds: 0 };
-      });
       document.querySelector('#completeModal').classList.add('active');
       return;
     }
@@ -721,11 +716,6 @@
     streak = 0; document.querySelector('#streakDisplay').textContent = '0';
     currentLevel++; window._hzFail = 0; initLevel();
   });
-  document.querySelector('#lbSubmitBtn').addEventListener('click', () => {
-    showNameInput('hanzi', 'Progress: ' + (currentLevel+1) + '/' + PUZZLES.length + ' | Score: ' + score + ' | Streak: ' + streak, function() {
-      return { score: score, time_seconds: 0 };
-    });
-  });
   document.querySelector('#restartAllBtn').addEventListener('click', () => {
     resetGame();
     document.querySelector('#scoreDisplay').textContent = '0';
@@ -738,6 +728,5 @@
   initLevel();
 })();
 </script>
-<script src="/js/leaderboard.js"></script>
 </body>
 </html>

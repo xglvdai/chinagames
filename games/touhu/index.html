@@ -53,7 +53,6 @@
         </ul>
       </li>
       <li><a href="/how-to-play/#guide-touhu" class="nav-link">How to Play</a></li>
-      <li><a href="/#leaderboard" class="nav-link">Leaderboard</a></li>
     </ul>
   </div>
 </nav>
@@ -72,7 +71,6 @@
       </div>
       <div class="game-actions">
         <button class="btn btn-primary btn-sm" id="restartBtn">🔄 New Game</button>
-        <button class="btn btn-gold btn-sm" id="lbSubmitBtn" title="Submit your current score to the leaderboard">🏆 Submit Score</button>
       </div>
     </div>
   </div>
@@ -363,9 +361,6 @@
     else if (score >= 200) { icon.textContent='🏆'; title.textContent='Expert Thrower!'; rating.textContent='⭐⭐ Great aim!'; }
     else if (score >= 100) { icon.textContent='🎯'; title.textContent='Good Game!'; rating.textContent='⭐ Keep practicing!'; }
     else { icon.textContent='🏺'; title.textContent='Good Effort!'; rating.textContent='Practice makes perfect'; }
-    showNameInput('touhu', 'Score: ' + score + ' / 500', function() {
-      return { score: score, time_seconds: 0 };
-    });
     document.querySelector('#gameOverModal').classList.add('active');
   }
 
@@ -474,11 +469,6 @@
 
   document.querySelector('#restartBtn').addEventListener('click', restartGame);
   document.querySelector('#playAgainBtn').addEventListener('click', restartGame);
-  document.querySelector('#lbSubmitBtn').addEventListener('click', () => {
-    showNameInput('touhu', 'Score: ' + score + ' / ' + MAX_THROWS + ' throws', function() {
-      return { score: score, time_seconds: 0 };
-    });
-  });
 
   // Init
   windForce = randomWind();
@@ -486,6 +476,5 @@
   draw();
 })();
 </script>
-<script src="/js/leaderboard.js"></script>
 </body>
 </html>

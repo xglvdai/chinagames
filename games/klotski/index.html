@@ -108,7 +108,6 @@
         </ul>
       </li>
       <li><a href="/how-to-play/#guide-klotski" class="nav-link">How to Play</a></li>
-      <li><a href="/#leaderboard" class="nav-link">Leaderboard</a></li>
     </ul>
   </div>
 </nav>
@@ -128,7 +127,6 @@
       <div class="game-actions">
         <button class="btn btn-secondary btn-sm" id="undoBtn">↩ Undo</button>
         <button class="btn btn-primary btn-sm" id="restartBtn">🔄 Restart</button>
-        <button class="btn btn-gold btn-sm" id="lbSubmitBtn" title="Submit your current score to the leaderboard">🏆 Submit Score</button>
       </div>
     </div>
   </div>
@@ -318,9 +316,6 @@
       document.querySelector('#winMoves').textContent = moveCount;
       document.querySelector('#winTime').textContent = formatTime(timerSeconds);
       document.querySelector('#winBest').textContent = LEVELS[currentLevel].best;
-      showNameInput('klotski', 'Level: ' + LEVELS[currentLevel].name + ' | ' + moveCount + ' moves', function() {
-        return { score: Math.max(1000 - moveCount * 5, 0), time_seconds: timerSeconds };
-      });
       winModal.classList.add('active');
     }
   }
@@ -457,16 +452,9 @@
   document.querySelectorAll('.level-btn').forEach(btn => {
     btn.addEventListener('click', () => initLevel(parseInt(btn.dataset.level)));
   });
-  document.querySelector('#lbSubmitBtn').addEventListener('click', () => {
-    const klotskiScore = Math.max(1000 - moveCount * 3, 10);
-    showNameInput('klotski', 'Level: ' + LEVELS[currentLevel].name + ' | ' + moveCount + ' moves | ' + formatTime(timerSeconds), function() {
-      return { score: klotskiScore, time_seconds: timerSeconds };
-    });
-  });
 
   initLevel(0);
 })();
 </script>
-<script src="/js/leaderboard.js"></script>
 </body>
 </html>

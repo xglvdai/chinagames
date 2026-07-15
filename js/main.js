@@ -1,6 +1,6 @@
 /**
  * ZenMatch Games — Main JavaScript
- * Handles navigation, leaderboard, animations, interactions
+ * Handles navigation, animations, interactions
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initNavigation();
   initFloatingTiles();
   initScrollAnimations();
-  initLeaderboard();
   initMobileMenu();
   initPlayNowModal();
   initDropdownMenus();
@@ -121,64 +120,6 @@ function initScrollAnimations() {
   document.querySelectorAll('.game-card, .about-card, .section-header').forEach(el => {
     observer.observe(el);
   });
-}
-
-// ===== Leaderboard =====
-function initLeaderboard() {
-  const tabs = document.querySelectorAll('.lb-tab');
-  const tbody = document.querySelector('#leaderboardBody');
-  if (!tabs.length || !tbody) return;
-
-  const API_BASE = 'https://api.zenmatchgames.com';
-
-  async function renderLeaderboard(game) {
-    tbody.innerHTML = '<tr><td colspan="5" class="loading">Loading leaderboard...</td></tr>';
-    try {
-      const res = await fetch(API_BASE + '/api/leaderboard/' + game);
-      const data = await res.json();
-      if (data && data.length) {
-        tbody.innerHTML = data.map((row, i) => `
-          <tr>
-            <td><span class="${i < 3 ? 'rank-' + (i+1) : ''}">#${i+1}</span></td>
-            <td>${row.player}</td>
-            <td>${(row.score || 0).toLocaleString()}</td>
-            <td>${row.time_seconds ? Math.floor(row.time_seconds/60) + ':' + String(row.time_seconds%60).padStart(2,'0') : '—'}</td>
-            <td>${row.created_at ? new Date(row.created_at).toLocaleDateString() : '—'}</td>
-          </tr>
-        `).join('');
-        return;
-      }
-    } catch(e) {
-      console.warn('API unavailable, using local scores');
-    }
-    // Fallback: local scores
-    const localScores = JSON.parse(localStorage.getItem('zenmatch_local_scores') || '{}');
-    const data = (localScores[game] || []).slice(0, 10);
-    if (data.length) {
-      tbody.innerHTML = data.map((row, i) => `
-        <tr>
-          <td><span class="${i < 3 ? 'rank-' + (i+1) : ''}">#${i+1}</span></td>
-          <td>${row.player}</td>
-          <td>${(row.score || 0).toLocaleString()}</td>
-          <td>${row.time_seconds ? Math.floor(row.time_seconds/60) + ':' + String(row.time_seconds%60).padStart(2,'0') : '—'}</td>
-          <td>${row.date ? row.date.slice(0,10) : '—'}</td>
-        </tr>
-      `).join('');
-    } else {
-      tbody.innerHTML = '<tr><td colspan="5">No scores yet — be the first to play!</td></tr>';
-    }
-  }
-
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      renderLeaderboard(tab.dataset.game);
-    });
-  });
-
-  // Initial render
-  renderLeaderboard('mahjong');
 }
 
 // ===== Play Now Modal =====

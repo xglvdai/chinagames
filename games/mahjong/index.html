@@ -70,7 +70,6 @@
         </ul>
       </li>
       <li><a href="/how-to-play/#guide-mahjong" class="nav-link">How to Play</a></li>
-      <li><a href="/#leaderboard" class="nav-link">Leaderboard</a></li>
     </ul>
   </div>
 </nav>
@@ -93,7 +92,6 @@
         <button class="btn btn-secondary btn-sm" id="hintBtn">💡 Hint</button>
         <button class="btn btn-secondary btn-sm" id="shuffleBtn">🔀 Shuffle</button>
         <button class="btn btn-primary btn-sm" id="restartBtn">🔄 Restart</button>
-        <button class="btn btn-gold btn-sm" id="lbSubmitBtn" title="Submit your current score to the leaderboard">🏆 Submit Score</button>
       </div>
     </div>
   </div>
@@ -264,10 +262,6 @@
         document.querySelector('#winTitle').textContent = 'Grandmaster!';
         document.querySelector('#winMsg').textContent = 'You completed ALL 10 levels! Total time: ' + formatTime(totalTime);
         document.querySelector('#nextLevelBtn').style.display = 'none';
-        // Leaderboard: prompt for player name after beating all levels
-        showNameInput('mahjong', 'Total Time: ' + formatTime(totalTime) + ' | Best Level: ' + bestLevel, function() {
-          return { score: bestLevel * 100 + score, time_seconds: totalTime };
-        });
       }
       winModal.classList.add('active');
     } else {
@@ -385,17 +379,11 @@
   document.querySelector('#hintBtn').addEventListener('click', provideHint);
   document.querySelector('#shuffleBtn').addEventListener('click', shuffleBoard);
   document.querySelector('#shuffleFromNoMoves').addEventListener('click', shuffleBoard);
-  document.querySelector('#lbSubmitBtn').addEventListener('click', () => {
-    showNameInput('mahjong', 'Level: ' + (currentLevelIdx+1) + ' | Score: ' + score + ' | Best: ' + bestLevel, function() {
-      return { score: score + (bestLevel * 200), time_seconds: timerSeconds };
-    });
-  });
 
   // Init
   bestLevelDisplay.textContent = bestLevel;
   startLevel(bestLevel - 1);
 })();
 </script>
-<script src="/js/leaderboard.js"></script>
 </body>
 </html>

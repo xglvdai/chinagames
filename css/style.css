@@ -151,19 +151,6 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); }
   color: var(--color-gold-light);
 }
 
-.btn-gold {
-  background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
-  color: #1a1a0a;
-  border: none;
-  box-shadow: 0 0 20px rgba(201,168,76,0.3);
-  font-weight: 700;
-}
-.btn-gold:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 30px rgba(201,168,76,0.6);
-  color: #000;
-}
-
 .btn-card {
   background: transparent;
   color: var(--color-gold-light);
@@ -541,86 +528,6 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); }
   color: var(--color-text-dim);
 }
 
-/* ----- Leaderboard ----- */
-.leaderboard-section {
-  padding: var(--space-4xl) 0;
-}
-
-.leaderboard-tabs {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-sm);
-  margin-bottom: var(--space-xl);
-}
-.lb-tab {
-  padding: 0.5rem 1.25rem;
-  background: transparent;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
-  color: var(--color-text-dim);
-  cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: 500;
-  transition: all var(--transition-fast);
-}
-.lb-tab:hover {
-  border-color: var(--color-gold-dark);
-  color: var(--color-text);
-}
-.lb-tab.active {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: #fff;
-}
-
-.leaderboard-table-wrap {
-  overflow-x: auto;
-  margin-bottom: var(--space-xl);
-}
-
-.leaderboard-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.leaderboard-table th,
-.leaderboard-table td {
-  padding: 0.85rem var(--space-md);
-  text-align: left;
-  border-bottom: 1px solid var(--color-border);
-}
-.leaderboard-table th {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.leaderboard-table td {
-  font-size: 0.95rem;
-}
-.leaderboard-table tbody tr {
-  transition: background var(--transition-fast);
-}
-.leaderboard-table tbody tr:hover {
-  background: rgba(255,255,255,0.02);
-}
-.leaderboard-table .rank-1 { color: var(--color-gold-light); font-weight: 700; }
-.leaderboard-table .rank-2 { color: #c0c0c0; font-weight: 700; }
-.leaderboard-table .rank-3 { color: #cd7f32; font-weight: 700; }
-.leaderboard-table .loading {
-  text-align: center;
-  color: var(--color-text-muted);
-  padding: var(--space-2xl);
-}
-
-.leaderboard-cta {
-  text-align: center;
-}
-.leaderboard-cta p {
-  color: var(--color-text-dim);
-  margin-bottom: var(--space-md);
-}
-
 /* ----- About ----- */
 .about-section {
   padding: var(--space-4xl) 0;
@@ -800,10 +707,6 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); }
 @media (max-width: 480px) {
   .footer-grid { grid-template-columns: 1fr; }
   .hero-stats { gap: var(--space-lg); }
-  .leaderboard-table th:nth-child(4),
-  .leaderboard-table td:nth-child(4),
-  .leaderboard-table th:nth-child(5),
-  .leaderboard-table td:nth-child(5) { display: none; }
 }
 
 /* ----- Game Picker Modal ----- */
